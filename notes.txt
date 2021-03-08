@@ -1,0 +1,25 @@
+
+test creating db and table
+
+test opening db
+
+test inserting and retrieving data into db
+
+test adding joto data
+
+test image compression
+
+test moving images
+
+test exporting text and check image integrity
+
+test adding latex - 
+
+test latexmk - check compiling errors
+
+
+check for .init and not initialise
+check for 
+
+if not db and/or table, then creat them
+python argument - init: only create if all empty - no db, no directories other throws errors
