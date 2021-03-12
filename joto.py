@@ -160,12 +160,18 @@ class ImagesManage():
                 check = True
         if not check: raise Exception("Error: Incorrect file type")
 
+class TextInput():
+
+    def get_input(self):
+        return input("Text: ")
+
 
 class Joto():
-    def __init__(self, sqlite_db, images_manage):
+    def __init__(self, sqlite_db, images_manage, text_input):
 
         self.sqlite_db = sqlite_db
         self.images_manage = images_manage
+        self.text_input = text_input
 
     def check_requirements(self):
         '''Not to be used as part of other functions - manual intervention required'''
@@ -190,9 +196,6 @@ class Joto():
         self.validate(date)
         return title,date
 
-    def input_text(self,file):
-        return input("Text: ")
-
     def add_text_only(self):
         pass
 
@@ -202,7 +205,7 @@ class Joto():
                 self.images_manage.check_filetype(file)
                 title,date = self.extract_attributes(file)
                 print(title)
-                text = self.input_text(file)
+                text = self.text_input.get_input()
                 self.sqlite_db.add_joto_data(title,date,text,file)
 
                 self.images_manage.compress_and_archive_image(file)

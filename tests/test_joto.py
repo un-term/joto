@@ -10,6 +10,7 @@ import shutil
 from wand.image import Image
 
 import unittest
+from unittest.mock import Mock
 
 import os,sys,inspect
 current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
@@ -128,9 +129,11 @@ class TestSQLiteDB(unittest.TestCase):
         # shutil.copy(image,src_dir + image)
         #--------------------------------------------------
 
+        text_input = Mock()
+
         sqlite_db = joto.JotoSQLiteDB(db_path)
         images_manage = joto.ImagesManage(size, src_dir, dst_dir, achv_dir)
-        joto_obj = joto.Joto(sqlite_db,images_manage)
+        joto_obj = joto.Joto(sqlite_db,images_manage,text_input)
         joto_obj.create_all_requirements()
         joto_obj.check_requirements()
         # joto_obj.scan_for_and_add_images_with_text()
@@ -159,10 +162,13 @@ class TestSQLiteDB(unittest.TestCase):
 
         #--------------------------------------------------
 
+        text_input = Mock()
+        text_input.get_input.return_value = "Lorem ispum etc"
+
         sqlite_db = joto.JotoSQLiteDB(db_path)
         images_manage = joto.ImagesManage(size, src_dir, dst_dir, achv_dir)
 
-        joto_obj = joto.Joto(sqlite_db,images_manage)
+        joto_obj = joto.Joto(sqlite_db,images_manage,text_input)
         joto_obj.create_all_requirements()
         joto_obj.check_requirements()
 
