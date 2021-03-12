@@ -6,8 +6,8 @@ joto.db
 joto.pdf
 joto.tex
 venv/
-tests/archived_images/
-tests/compressed_images/
+tests/images/
 tests/ingest_images/
 venv/
 __pycache__
+test.db
