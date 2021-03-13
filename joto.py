@@ -4,9 +4,31 @@ import sqlite3
 import datetime
 import os
 import subprocess
-from pathlib import Path
 import sqlite3
 import shutil
+import sys
+import getopt
+
+def append_multiple_lines_to_file(file_name, lines_to_append):
+    # Open the file in append & read mode ('a+')
+    with open(file_name, "a+") as file_object:
+        appendEOL = False
+        # Move read cursor to the start of file.
+        file_object.seek(0)
+        # Check if file is not empty
+        data = file_object.read(100)
+        if len(data) > 0:
+            appendEOL = True
+        # Iterate over each string in the list
+        for line in lines_to_append:
+            # If file is not empty then append '\n' before first line for
+            # other lines always append '\n' before appending line
+            if appendEOL is True:
+                file_object.write("\n")
+            else:
+                appendEOL = True
+            # Append element at the end of file
+            file_object.write(line)
 
 
 class JotoSQLiteDB():
@@ -20,12 +42,12 @@ class JotoSQLiteDB():
         try:
             self.connection = sqlite3.connect(self.db)
             return self.connection.cursor()
-            print("Successfully connected to: ",self.db)
+            print("Successfully connected to: ", self.db)
 
         except sqlite3.Error as error:
             print("Failed to read data from sqlite table", error)
 
-    def disconnect(self,cursor):
+    def disconnect(self, cursor):
         try:
             cursor.close()
             self.changes = self.connection.total_changes
@@ -40,8 +62,7 @@ class JotoSQLiteDB():
 
     def check_for_table(self):
         cursor = self.connect()
-        
-        # sqlite_query = '''SELECT name FROM sqlite_master WHERE type='table' AND name='{''' + self.table + '''}';'''
+
         sqlite_query = ''' SELECT count(name) FROM sqlite_master WHERE type='table' AND name='joto'; '''
         cursor.execute(sqlite_query)
         if cursor.fetchone()[0] == 1: return True
@@ -96,6 +117,10 @@ class JotoSQLiteDB():
         return cursor.fetchall()
           
         self.disconnect(cursor)
+
+    def check_images_integrity(self):
+        '''Check that images listed in db are also in images/compressed'''
+        pass
 
     def export_text_to_files(self):
         pass
@@ -166,22 +191,114 @@ class TextInput():
         return input("Text: ")
 
 
+class Latex():
+    def __init__(self,latex_dir):
+        self.dir= latex_dir
+        self.template_file = "template.tex"
+        self.joto_file= "joto.tex"
+        self.content = []
+
+    def create_paths(self):
+        os.makedirs(self.dir)
+
+    def check_paths(self):
+        count = 2
+        if os.path.exists(self.dir): count -= 1
+        if os.path.exists(self.template_file): count -= 1
+        if count == 0: return True
+        else: return False
+
+    def copy_template(self):
+        shutil.copyfile(self.template_file,self.joto_file)
+
+    def snpt_image_with_text(self,date,image,text):
+        self.content.extend([
+           self._add_date(date),
+           self._add_empty_line(),
+           self._add_image(image),
+           self._add_empty_line(),
+           self._add_text(text),
+           self._add_empty_line()
+       ])
+
+    def snpt_image_without_date(self,image,text):
+        self.content.extend([
+           self._add_image(image),
+           self._add_empty_line(),
+           self._add_text(text),
+           self._add_empty_line()
+       ])
+
+    def snpt_just_text(self):
+        self.content.extend([
+           self._add_date(date),
+           self._add_empty_line(),
+           self._add_text(text),
+           self._add_empty_line()
+       ])
+
+    def snpt_switch_empty_line(self):
+        self.content.extend([
+           self._add_switch(),
+           self._add_empty_line()
+       ])
+
+    def snpt_end(self):
+        '''Already a list'''
+        self.content.extend(self._add_end())
+
+    def _add_date(self,date):
+        return "\section*{" + date + "}"
+
+    def _add_image(self,image):
+        '''Image size restricted by max size option'''
+        # return "\includegraphics[height=\columnwidth,keepaspectratio]{" + image + "}"
+        return "\includegraphics[max size={\columnwidth}{\columnwidth}]{" + image + "}"
+
+    def _add_text(self,text):
+        return text
+
+    def _add_switch(self):
+        return "\switchcolumn"
+
+    def _add_empty_line(self):
+        # pass
+        return ""
+
+    def _add_end(self):
+        return ["\end{paracol}","\end{document}"]
+
+    def append_content_to_latex_file(self):
+        append_multiple_lines_to_file(self.joto_file,self.content)
+
+    def latexmk(self):
+        try: subprocess.run(["latexmk", "-pdf", "-jobname=latex/joto", "joto.tex"], check=True)
+        except: raise Exception("Latexmk failed")
+
+
 class Joto():
-    def __init__(self, sqlite_db, images_manage, text_input):
+    def __init__(self, sqlite_db, images_manage, text_input, latex):
 
         self.sqlite_db = sqlite_db
         self.images_manage = images_manage
         self.text_input = text_input
+        self.latex = latex
 
     def check_requirements(self):
         '''Not to be used as part of other functions - manual intervention required'''
-        if self.sqlite_db.check_db_path() and self.sqlite_db.check_for_table() and self.images_manage.check_paths():
+        if all([
+            self.sqlite_db.check_db_path(),
+            self.sqlite_db.check_for_table(),
+            self.images_manage.check_paths(),
+            # self.latex.check_paths()
+            ]):
             print("Requirements met!")
-        else: raise Exception("Requiements at NOT met")
+        else: raise Exception("Requiements are NOT met")
 
     def create_all_requirements(self):
         self.sqlite_db.create_db_table()
         self.images_manage.create_paths()
+        self.latex.create_paths()
         print("db,table and paths created")
 
     def validate(self, date_text):
@@ -199,6 +316,9 @@ class Joto():
     def add_text_only(self):
         pass
 
+    def export_text(path):
+        pass
+
     def scan_for_and_add_images_with_text(self):
         for root, dirs, files in os.walk(self.images_manage.src_dir): 
             for file in files:
@@ -206,25 +326,73 @@ class Joto():
                 title,date = self.extract_attributes(file)
                 print(title)
                 text = self.text_input.get_input()
-                self.sqlite_db.add_joto_data(title,date,text,file)
+                self.sqlite_db.add_joto_data(title,date,text,file)# db input order
 
                 self.images_manage.compress_and_archive_image(file)
 
-    def export_text(path):
+    def generate_latex(self):
+        self.latex.copy_template()
+        db_data = self.sqlite_db.retrieve_all_data_ordered_by_date()
+        date = None
+        for row in db_data:
+            prev_date = date
+            title = row[1]
+            date = row[2]
+            text = row[3]
+            image = row[4]
+
+            if prev_date != date and prev_date != None:
+                self.latex.snpt_switch_empty_line()
+            if prev_date == date:
+                self.latex.snpt_image_without_date(image,text)
+            elif prev_date != date:
+                if image == "":
+                    self.latex.snpt_just_text(date,text)
+                else:
+                    self.latex.snpt_image_with_text(date,image,text)
+
+        self.latex.snpt_switch_empty_line()
+        self.latex.snpt_end()
+
+        self.latex.append_content_to_latex_file()
+        self.latex.latexmk()
+
+
+def main(argv):
+    db_path = "joto.db"
+    src_dir = "ingest_images/"
+    dst_dir = "images/compressed/"
+    achv_dir = "images/original/"
+    latex_dir = "latex/"
+    size = "1000x1000"
+    print(f"SQLite db path: {db_path}")
+
+    sqlite_db = JotoSQLiteDB(db_path)
+    images_manage = ImagesManage(size, dst_dir, achv_dir)
+    text_input = TextInput()
+    latex = Latex(latex_dir)
+    joto_obj = Joto(sqlite_db,images_manage,text_input,latex)
+
+    try:
+        opts, args = getopt.getopt(argv)
+    except getopt.GetoptError:
+        print('Incorrect input format!')
+        sys.exit(2)
+
+    if args[0] == "create_all_requirements":
+        joto_obj.create_all_requirements()
+        joto_obj.check_requirements()
+    elif args[0] == "text":
         pass
+    elif args[0] == "scan":
+        joto_obj.check_requirements()
+        joto_obj.scan_for_and_add_images_with_text()
+        joto_obj.generate_latex()
+    elif args[0] == "export":
+        pass
+    else: print("Choose option: scan text export create_all_requirements")
 
-# def main():
-#     db_path = "joto.db"
-#    = "ingest_images/"
-#     dst_dir = "images/compressed/"
-#     achv_dir = "images/original"
-#     size = "1000x1000"
-    
-#     sqlite_db = JotoSQLiteDB(db_path)
-#     images_manage = ImagesManage(size, dst_dir, achv_dir)
-#     joto = Joto(sqlite_db, images_manage,src_dir)
-#     joto.scan_for_and_add_images_with_text()
+  
 
-
-# if __name__ == "__main__":
-#   images_manage.src_dir main(images_manage.src_dir
+if __name__ == "__main__":
+   main(sys.argv[1:])
