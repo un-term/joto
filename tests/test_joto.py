@@ -194,7 +194,8 @@ class TestSQLiteDB(unittest.TestCase):
         joto_obj.generate_latex()
 
         all_data = sqlite_db.retrieve_all_data_ordered_by_date()
-        if all_data[0][4] == image:
+        result = False
+        if all_data[0][4] == image2: # first dated image
             result = True
         # joto_obj.scan_for_and_add_images_with_text()
 

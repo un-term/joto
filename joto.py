@@ -98,7 +98,7 @@ class JotoSQLiteDB():
         cursor = self.connect()
 
         sqlite_insert_with_param = '''INSERT INTO joto
-                          (title, date, text, image) 
+                          (title, date, text, image)
                           VALUES (?, ?, ?, ?);'''
 
         data_tuple = (title, date, text, image)
@@ -115,7 +115,7 @@ class JotoSQLiteDB():
                                     ORDER BY date ASC;'''
         cursor.execute(sqlite_select_query)
         return cursor.fetchall()
-          
+
         self.disconnect(cursor)
 
     def check_images_integrity(self):
@@ -134,12 +134,12 @@ class ImagesManage():
         # self.compression_size = "1000x1000"
         # self.src_dir = "ingest_images/"
         # self.dst_dir = "images/compressed/"
-        self.size = size #compression size
+        self.size = size  # compression size
         self.src_dir = src_dir
         self.dst_dir = dst_dir
         self.achv_dir = achv_dir
         self.file_types = ["jpg","JPG","jpeg","JPEG","png","PNG"]
-        self.target_size = 20 #%
+        self.target_size = 20  #%
 
     def check_paths(self):
         count = 3
@@ -167,14 +167,14 @@ class ImagesManage():
     def _compress_image(self,src_filepath,dst_filepath):
         try:
             subprocess.run(["convert", "-resize", self.size, src_filepath, dst_filepath], check=True)
-        except: raise Exception("External Image Magik convert failed")
+        except: print("External Image Magik convert failed")
 
     def _check_compression(self,src_filepath,dst_filepath):
         original_image_size = int(os.stat(src_filepath)[6])
         compressed_image_size = int(os.stat(dst_filepath)[6])
         if (compressed_image_size/original_image_size) < (self.target_size/100):
             return True
-        
+
     def _archive_original_image(self, src_filepath, achv_filepath):
             shutil.move(src_filepath, achv_filepath)
 
@@ -219,7 +219,7 @@ class Latex():
            self._add_empty_line(),
            self._add_text(text),
            self._add_empty_line()
-       ])
+        ])
 
     def snpt_image_without_date(self,image,text):
         self.content.extend([
@@ -227,21 +227,21 @@ class Latex():
            self._add_empty_line(),
            self._add_text(text),
            self._add_empty_line()
-       ])
+        ])
 
-    def snpt_just_text(self):
+    def snpt_just_text(self,text):
         self.content.extend([
            self._add_date(date),
            self._add_empty_line(),
            self._add_text(text),
            self._add_empty_line()
-       ])
+        ])
 
     def snpt_switch_empty_line(self):
         self.content.extend([
            self._add_switch(),
            self._add_empty_line()
-       ])
+        ])
 
     def snpt_end(self):
         '''Already a list'''
@@ -273,7 +273,7 @@ class Latex():
 
     def latexmk(self):
         try: subprocess.run(["latexmk", "-pdf", "-jobname=latex/joto", "joto.tex"], check=True)
-        except: raise Exception("Latexmk failed")
+        except: print("Latexmk failed")
 
 
 class Joto():
