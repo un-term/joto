@@ -73,13 +73,6 @@ class JotoSQLiteDB():
     def create_db_table(self):
         cursor = self.connect()
 
-        # sqlite_create_table_query = '''CREATE TABLE joto (
-        #                         id    INTEGER PRIMARY KEY AUTOINCREMENT,
-        #                         title TEXT NOT NULL,
-        #                         date  TEXT NOT NULL,
-        #                         text  TEXT NOT NULL,
-        #                         image TEXT NOT NULL
-        #                     );'''
         sqlite_create_table_query = '''CREATE TABLE joto (
                                 id    INTEGER PRIMARY KEY AUTOINCREMENT,
                                 title TEXT NOT NULL,
@@ -322,11 +315,17 @@ class Joto():
         self.validate(date)
         return title,date
 
-    def add_text_only(self):
-        pass
-
     def export_text(path):
         pass
+
+    def add_text_only(self):
+        print("Date YYYY-MM-DD")
+        date = self.text_input.get_input()
+        self.validate(date)
+        print("Text")
+        text = self.text_input.get_input()
+        image = "None"
+        self.sqlite_db.add_joto_data(title,date,text,file)# db input order
 
     def scan_for_and_add_images_with_text(self):
         for root, dirs, files in os.walk(self.images_manage.src_dir): 
@@ -372,6 +371,10 @@ class Joto():
         self.latex.append_content_to_latex_file()
         self.latex.latexmk()
 
+    def print_all_db_data(self):
+        db_data = self.sqlite_db.retrieve_all_data_ordered_by_date()
+        print(db_data)
+
 
 def main(argv):
     db_path = "joto.db"
@@ -398,13 +401,15 @@ def main(argv):
         joto_obj.create_all_requirements()
         joto_obj.check_requirements()
     elif args[0] == "text":
-        pass
+        joto_obj.check_requirements()
+        joto_obj.add_text_only()
     elif args[0] == "scan":
         joto_obj.check_requirements()
         joto_obj.scan_for_and_add_images_with_text()
         joto_obj.generate_latex()
     elif args[0] == "export":
-        pass
+        joto_obj.check_requirements()
+        joto_obj.print_all_db_data()
     else: print("Choose option: scan text export create_all_requirements")
 
   
