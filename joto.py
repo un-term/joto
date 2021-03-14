@@ -243,6 +243,12 @@ class Latex():
            self._add_empty_line()
         ])
 
+    def snpt_switch_star_empty_line(self):
+        self.content.extend([
+           self._add_switch_star(),
+           self._add_empty_line()
+        ])
+
     def snpt_end(self):
         '''Already a list'''
         self.content.extend(self._add_end())
@@ -260,6 +266,9 @@ class Latex():
 
     def _add_switch(self):
         return "\switchcolumn"
+
+    def _add_switch_star(self):
+        return "\switchcolumn*"
 
     def _add_empty_line(self):
         # pass
@@ -334,6 +343,7 @@ class Joto():
         self.latex.copy_template()
         db_data = self.sqlite_db.retrieve_all_data_ordered_by_date()
         date = None
+        switch_star = False
         for row in db_data:
             prev_date = date
             title = row[1]
@@ -341,8 +351,13 @@ class Joto():
             text = row[3]
             image = row[4]
 
-            if prev_date != date and prev_date != None:
-                self.latex.snpt_switch_empty_line()
+            # if prev_date != date and prev_date != None:
+            if prev_date != None:
+                if not switch_star:
+                    self.latex.snpt_switch_empty_line()
+                elif switch_star:
+                    self.latex.snpt_switch_star_empty_line()
+                switch_star = not switch_star
             if prev_date == date:
                 self.latex.snpt_image_without_date(image,text)
             elif prev_date != date:

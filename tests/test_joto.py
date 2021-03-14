@@ -148,10 +148,11 @@ class TestSQLiteDB(unittest.TestCase):
         print("Integration test: adding image")
         print("------------------------------------------")
 
-        image = "2020-03-17_Sox.jpg"
-        image2 = "2020-03-17_fat_Sox.jpg"
+        image1 = "2020-03-17_fat_Sox.jpg"
+        image2 = "2020-03-17_Sox.jpg"
         image3 = "2020-07-18_Sox_laptop.jpg"
         image4 = "2020-05-25_Sox_looking.jpg"
+        image5 = "2020-07-20_Sox_iron.jpg"
         latex_template = "template.tex"
         size = "1000x1000"
 
@@ -184,10 +185,11 @@ class TestSQLiteDB(unittest.TestCase):
         joto_obj.check_requirements()
 
         # Copy required test files 
-        shutil.copy(image,src_dir + image)
+        shutil.copy(image1,src_dir + image1)
         shutil.copy(image2,src_dir + image2)
         shutil.copy(image3,src_dir + image3)
         shutil.copy(image4,src_dir + image4)
+        shutil.copy(image5,src_dir + image5)
         shutil.copy("../" + latex_template,latex_template)
 
         joto_obj.scan_for_and_add_images_with_text()
@@ -195,7 +197,7 @@ class TestSQLiteDB(unittest.TestCase):
 
         all_data = sqlite_db.retrieve_all_data_ordered_by_date()
         result = False
-        if all_data[0][4] == image2: # first dated image
+        if all_data[0][4] == image1: # first dated image
             result = True
         # joto_obj.scan_for_and_add_images_with_text()
 
