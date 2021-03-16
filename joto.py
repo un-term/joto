@@ -19,7 +19,6 @@ def append_multiple_lines_to_file(file_name, lines_to_append):
         data = file_object.read(100)
         if len(data) > 0:
             appendEOL = True
-        # Iterate over each string in the list
         for line in lines_to_append:
             # If file is not empty then append '\n' before first line for
             # other lines always append '\n' before appending line
@@ -58,13 +57,23 @@ class JotoSQLiteDB():
 
         return wrap
 
-    def check_db_path(self):
-        if os.path.exists(self.db): return True
-        else: return False
+    def check_req(self):
+        if os.path.exists(self.db) and self._check_for_table():
+            return True
+        else:
+            return False
+
+    def create_req(self):
+        '''db created when table created'''
+        self._create_db_table()
+
+    def delete_req(self):
+        if os.path.exists(self.db): os.remove(self.db)
+
 
     @connect
     # def check_for_table(self,connection):
-    def check_for_table(self):
+    def _check_for_table(self):
         cursor = self.connection.cursor()
         sqlite_query = ''' SELECT count(name) FROM sqlite_master WHERE type='table' AND name='joto'; '''
         cursor.execute(sqlite_query)
@@ -73,7 +82,7 @@ class JotoSQLiteDB():
         cursor.close()
 
     @connect
-    def create_db_table(self):
+    def _create_db_table(self):
         cursor = self.connection.cursor()
         sqlite_create_table_query = '''CREATE TABLE joto (
                                 id    INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -114,9 +123,6 @@ class JotoSQLiteDB():
         '''Check that images listed in db are also in images/compressed'''
         pass
 
-    def export_text_to_files(self):
-        pass
-
     def remove_last_row():
         pass
 
@@ -133,7 +139,8 @@ class ImagesManage():
         self.file_types = ["jpg","JPG","jpeg","JPEG","png","PNG"]
         self.target_size = 20  #%
 
-    def check_paths(self):
+
+    def check_req(self):
         count = 3
         if os.path.exists(self.src_dir): count -= 1
         if os.path.exists(self.dst_dir): count -= 1
@@ -141,10 +148,15 @@ class ImagesManage():
         if count == 0: return True
         else: return False
 
-    def create_paths(self):
+    def create_req(self):
         os.makedirs(self.src_dir)
         os.makedirs(self.dst_dir)
         os.makedirs(self.achv_dir)
+
+    def delete_req(self):
+        if os.path.exists(self.src_dir): shutil.rmtree(self.src_dir)
+        if os.path.exists(self.dst_dir): shutil.rmtree(self.dst_dir)
+        if os.path.exists(self.achv_dir): shutil.rmtree(self.achv_dir)
 
     def compress_and_archive_image(self,name):
         src_filepath = self.src_dir + name
@@ -185,20 +197,23 @@ class TextInput():
 
 class Latex():
     def __init__(self,latex_dir):
-        self.dir= latex_dir
+        self.dir = latex_dir
         self.template_file = "template.tex"
-        self.joto_file= "joto.tex"
+        self.joto_file = "joto.tex"
         self.content = []
 
-    def create_paths(self):
+    def create_req(self):
         os.makedirs(self.dir)
 
-    def check_paths(self):
+    def check_req(self):
         count = 2
         if os.path.exists(self.dir): count -= 1
         if os.path.exists(self.template_file): count -= 1
         if count == 0: return True
         else: return False
+
+    def delete_req(self):
+        if os.path.exists(self.dir): shutil.rmtree(self.dir)
 
     def copy_template(self):
         shutil.copyfile(self.template_file,self.joto_file)
@@ -285,29 +300,32 @@ class Joto():
         self.text_input = text_input
         self.latex = latex
 
-    def check_requirements(self):
+    def check_req(self):
         '''Not to be used as part of other functions - manual intervention required'''
         if all([
-            self.sqlite_db.check_db_path(),
-            self.sqlite_db.check_for_table(),
-            self.images_manage.check_paths(),
-            # self.latex.check_paths()
+            self.sqlite_db.check_req(),
+            self.images_manage.check_req(),
+            self.latex.check_req()
             ]):
             print("Requirements met!")
         else: raise Exception("Requiements are NOT met")
 
-    def create_all_requirements(self):
-        self.sqlite_db.create_db_table()
-        self.images_manage.create_paths()
-        self.latex.create_paths()
+    def create_req(self):
+        self.sqlite_db.create_req()
+        self.images_manage.create_req()
+        self.latex.create_req()
         print("db,table and paths created")
 
-    def delete_requirements(self):
-        if os.path.exists(self.sqlite_db.db): os.remove(self.sqlite_db.db)
-        if os.path.exists(self.images_manage.src_dir): shutil.rmtree(self.images_manage.src_dir)
-        if os.path.exists(self.images_manage.dst_dir): shutil.rmtree(self.images_manage.dst_dir)
-        if os.path.exists(self.images_manage.achv_dir): shutil.rmtree(self.images_manage.achv_dir)
-        if os.path.exists(self.latex.dir): shutil.rmtree(self.latex.dir)
+    def delete_req(self):
+        self.sqlite_db.delete_req()
+        self.images_manage.delete_req()
+        self.latex.delete_req()
+        print("db and paths deleted")
+        # if os.path.exists(self.sqlite_db.db): os.remove(self.sqlite_db.db)
+        # if os.path.exists(self.images_manage.src_dir): shutil.rmtree(self.images_manage.src_dir)
+        # if os.path.exists(self.images_manage.dst_dir): shutil.rmtree(self.images_manage.dst_dir)
+        # if os.path.exists(self.images_manage.achv_dir): shutil.rmtree(self.images_manage.achv_dir)
+        # if os.path.exists(self.latex.dir): shutil.rmtree(self.latex.dir)
 
 
     def validate(self, date_text):
@@ -399,22 +417,21 @@ def main(argv):
         print('Incorrect input format!')
         sys.exit(2)
 
-    if args[0] == "create_all_requirements":
-        joto_obj.create_all_requirements()
-        joto_obj.check_requirements()
+    if args[0] == "create_req":
+        joto_obj.create_req()
+        joto_obj.check_req()
+    if args[0] == "delete_req":
+        joto_obj.delete_req()
     elif args[0] == "text":
-        joto_obj.check_requirements()
+        joto_obj.check_req()
         joto_obj.add_text_only()
+        joto_obj.generate_latex()
     elif args[0] == "scan":
-        joto_obj.check_requirements()
+        joto_obj.check_req()
         joto_obj.scan_for_and_add_images_with_text()
         joto_obj.generate_latex()
-    elif args[0] == "export":
-        joto_obj.check_requirements()
-        joto_obj.print_all_db_data()
     else: print("Choose option: scan text export create_all_requirements")
 
-  
-
+ 
 if __name__ == "__main__":
    main(sys.argv[1:])

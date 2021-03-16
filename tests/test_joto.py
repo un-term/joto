@@ -162,13 +162,6 @@ class TestSQLiteDB(unittest.TestCase):
         dst_dir = "images/compressed/"
         achv_dir = "images/original/"
         latex_dir = "latex/"
-
-        # if os.path.exists(db_path): os.remove(db_path)
-        # if os.path.exists(src_dir): shutil.rmtree(src_dir)
-        # if os.path.exists(dst_dir): shutil.rmtree(dst_dir)
-        # if os.path.exists(achv_dir): shutil.rmtree(achv_dir)
-        # if os.path.exists(latex_dir): shutil.rmtree(latex_dir)
-
         #--------------------------------------------------
 
         text_input = Mock()
@@ -180,9 +173,9 @@ class TestSQLiteDB(unittest.TestCase):
         latex = joto.Latex(latex_dir)
 
         joto_obj = joto.Joto(sqlite_db,images_manage,text_input,latex)
-        joto_obj.delete_requirements()
-        joto_obj.create_all_requirements()
-        joto_obj.check_requirements()
+        joto_obj.delete_req()
+        joto_obj.create_req()
+        joto_obj.check_req()
 
         # Copy required test files 
         shutil.copy(image1,src_dir + image1)
