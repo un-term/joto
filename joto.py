@@ -36,46 +36,47 @@ class JotoSQLiteDB():
     def __init__(self, db_path):
         self.db = db_path
         self.connection = None
-        self.changes = None
 
-    def connect(self):
-        try:
-            self.connection = sqlite3.connect(self.db)
-            return self.connection.cursor()
-            print("Successfully connected to: ", self.db)
+    def connect(func):
+        '''Decorator. func wrapped into 'wrap' and new 'wrap' returned'''
+        def wrap(self,*args, **kwargs):
+            output = None
+            try:
+                self.connection = sqlite3.connect(self.db)
+                print("Successfully connected to: ", self.db)
 
-        except sqlite3.Error as error:
-            print("Failed to read data from sqlite table", error)
+                output = func(self, *args, **kwargs)
 
-    def disconnect(self, cursor):
-        try:
-            cursor.close()
-            self.changes = self.connection.total_changes
-            self.connection.close()
-            print("SQLite connection is closed")
-        except sqlite3.Error as error:
-            print("Error disconnecting from SQLite db", error)
+            except sqlite3.Error as error:
+                print("Error while working with SQLite", error)
+            finally:
+                if self.connection:
+                    print("Total Rows affected since the database connection was opened: ",self.connection.total_changes)
+                    self.connection.close()
+                print("Sqlite connection is closed")
+            return output
+
+        return wrap
 
     def check_db_path(self):
         if os.path.exists(self.db): return True
         else: return False
 
+    @connect
+    # def check_for_table(self,connection):
     def check_for_table(self):
-        cursor = self.connect()
-
+        cursor = self.connection.cursor()
         sqlite_query = ''' SELECT count(name) FROM sqlite_master WHERE type='table' AND name='joto'; '''
         cursor.execute(sqlite_query)
         if cursor.fetchone()[0] == 1: return True
         elif cursor.fetchone()[0] == 0: return False
+        cursor.close()
 
-        self.disconnect(cursor)
-
+    @connect
     def create_db_table(self):
-        cursor = self.connect()
-
+        cursor = self.connection.cursor()
         sqlite_create_table_query = '''CREATE TABLE joto (
                                 id    INTEGER PRIMARY KEY AUTOINCREMENT,
-                                title TEXT NOT NULL,
                                 date  TEXT NOT NULL,
                                 text  TEXT NOT NULL,
                                 image TEXT NOT NULL
@@ -83,33 +84,31 @@ class JotoSQLiteDB():
 
         cursor.execute(sqlite_create_table_query)
         self.connection.commit()
+        cursor.close()
         print("SQLite table created")
 
-        self.disconnect(cursor)
-
-    def add_joto_data(self, title, date, text, image):
-        cursor = self.connect()
+    @connect
+    def add_joto_data(self, date, text, image):
+        cursor = self.connection.cursor()
 
         sqlite_insert_with_param = '''INSERT INTO joto
-                          (title, date, text, image)
-                          VALUES (?, ?, ?, ?);'''
+                          (date, text, image)
+                          VALUES (?, ?, ?);'''
 
-        data_tuple = (title, date, text, image)
+        data_tuple = (date, text, image)
         cursor.execute(sqlite_insert_with_param, data_tuple)
         self.connection.commit()
-        print(f"Adding {title} to db")
+        cursor.close()
 
-        self.disconnect(cursor)
-
+    @connect
     def retrieve_all_data_ordered_by_date(self):
-        cursor = self.connect()
+        cursor = self.connection.cursor()
 
         sqlite_select_query = '''SELECT * from joto
                                     ORDER BY date ASC;'''
         cursor.execute(sqlite_select_query)
         return cursor.fetchall()
-
-        self.disconnect(cursor)
+        cursor.close()
 
     def check_images_integrity(self):
         '''Check that images listed in db are also in images/compressed'''
@@ -303,6 +302,14 @@ class Joto():
         self.latex.create_paths()
         print("db,table and paths created")
 
+    def delete_requirements(self):
+        if os.path.exists(self.sqlite_db.db): os.remove(self.sqlite_db.db)
+        if os.path.exists(self.images_manage.src_dir): shutil.rmtree(self.images_manage.src_dir)
+        if os.path.exists(self.images_manage.dst_dir): shutil.rmtree(self.images_manage.dst_dir)
+        if os.path.exists(self.images_manage.achv_dir): shutil.rmtree(self.images_manage.achv_dir)
+        if os.path.exists(self.latex.dir): shutil.rmtree(self.latex.dir)
+
+
     def validate(self, date_text):
         try:
             datetime.datetime.strptime(date_text, '%Y-%m-%d')
@@ -325,7 +332,7 @@ class Joto():
         print("Text")
         text = self.text_input.get_input()
         image = "None"
-        self.sqlite_db.add_joto_data(title,date,text,file)# db input order
+        self.sqlite_db.add_joto_data(date,text,file)# db input order
 
     def scan_for_and_add_images_with_text(self):
         for root, dirs, files in os.walk(self.images_manage.src_dir): 
@@ -334,7 +341,7 @@ class Joto():
                 title,date = self.extract_attributes(file)
                 print(title)
                 text = self.text_input.get_input()
-                self.sqlite_db.add_joto_data(title,date,text,file)# db input order
+                self.sqlite_db.add_joto_data(date,text,file)# db input order
 
                 self.images_manage.compress_and_archive_image(file)
 
@@ -345,10 +352,9 @@ class Joto():
         switch_star = False
         for row in db_data:
             prev_date = date
-            title = row[1]
-            date = row[2]
-            text = row[3]
-            image = row[4]
+            date = row[1]
+            text = row[2]
+            image = row[3]
 
             # if prev_date != date and prev_date != None:
             if prev_date != None:
@@ -370,10 +376,6 @@ class Joto():
 
         self.latex.append_content_to_latex_file()
         self.latex.latexmk()
-
-    def print_all_db_data(self):
-        db_data = self.sqlite_db.retrieve_all_data_ordered_by_date()
-        print(db_data)
 
 
 def main(argv):

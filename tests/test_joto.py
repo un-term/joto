@@ -5,7 +5,6 @@ import subprocess
 from pathlib import Path
 import sqlite3
 import shutil
-from wand.image import Image
 
 import unittest
 from unittest.mock import Mock
@@ -164,11 +163,11 @@ class TestSQLiteDB(unittest.TestCase):
         achv_dir = "images/original/"
         latex_dir = "latex/"
 
-        if os.path.exists(db_path): os.remove(db_path)
-        if os.path.exists(src_dir): shutil.rmtree(src_dir)
-        if os.path.exists(dst_dir): shutil.rmtree(dst_dir)
-        if os.path.exists(achv_dir): shutil.rmtree(achv_dir)
-        if os.path.exists(latex_dir): shutil.rmtree(latex_dir)
+        # if os.path.exists(db_path): os.remove(db_path)
+        # if os.path.exists(src_dir): shutil.rmtree(src_dir)
+        # if os.path.exists(dst_dir): shutil.rmtree(dst_dir)
+        # if os.path.exists(achv_dir): shutil.rmtree(achv_dir)
+        # if os.path.exists(latex_dir): shutil.rmtree(latex_dir)
 
         #--------------------------------------------------
 
@@ -181,6 +180,7 @@ class TestSQLiteDB(unittest.TestCase):
         latex = joto.Latex(latex_dir)
 
         joto_obj = joto.Joto(sqlite_db,images_manage,text_input,latex)
+        joto_obj.delete_requirements()
         joto_obj.create_all_requirements()
         joto_obj.check_requirements()
 
@@ -197,7 +197,7 @@ class TestSQLiteDB(unittest.TestCase):
 
         all_data = sqlite_db.retrieve_all_data_ordered_by_date()
         result = False
-        if all_data[0][4] == image1: # first dated image
+        if all_data[0][3] == image1: # first dated image
             result = True
         # joto_obj.scan_for_and_add_images_with_text()
 

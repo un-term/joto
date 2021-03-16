@@ -11,3 +11,4 @@ tests/ingest_images/
 venv/
 __pycache__
 test.db
+*.csv
