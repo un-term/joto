@@ -188,6 +188,12 @@ class TestSQLiteDB(unittest.TestCase):
         joto_obj.scan_for_and_add_images_with_text(src_dir)
         text_input.get_input.return_value = "2020-02-12"
         joto_obj.add_text_only()
+
+        # Test deleting
+        text_input.get_input.return_value = "1212-12-12"
+        joto_obj.add_text_only()
+        sqlite_db.delete_last_row()
+
         joto_obj.generate_latex()
 
         all_data = sqlite_db.retrieve_all_data_ordered_by_date()

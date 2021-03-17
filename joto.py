@@ -50,7 +50,6 @@ class JotoSQLiteDB():
                 print("Error while working with SQLite", error)
             finally:
                 if self.connection:
-                    print("Total Rows affected since the database connection was opened: ",self.connection.total_changes)
                     self.connection.close()
                 print("Sqlite connection is closed")
             return output
@@ -70,9 +69,7 @@ class JotoSQLiteDB():
     def delete_req(self):
         if os.path.exists(self.db): os.remove(self.db)
 
-
     @connect
-    # def check_for_table(self,connection):
     def _check_for_table(self):
         cursor = self.connection.cursor()
         sqlite_query = ''' SELECT count(name) FROM sqlite_master WHERE type='table' AND name='joto'; '''
@@ -94,7 +91,7 @@ class JotoSQLiteDB():
         cursor.execute(sqlite_create_table_query)
         self.connection.commit()
         cursor.close()
-        print("SQLite table created")
+        print("SQLite table 'joto' created")
 
     @connect
     def add_joto_data(self, date, text, image):
@@ -114,7 +111,7 @@ class JotoSQLiteDB():
         cursor = self.connection.cursor()
 
         sqlite_select_query = '''SELECT * from joto
-                                    ORDER BY date ASC;'''
+                                ORDER BY date ASC;'''
         cursor.execute(sqlite_select_query)
         return cursor.fetchall()
         cursor.close()
@@ -123,8 +120,15 @@ class JotoSQLiteDB():
         '''Check that images listed in db are also in images/compressed'''
         pass
 
-    def remove_last_row():
-        pass
+    @connect
+    def delete_last_row(self):
+        cursor = self.connection.cursor()
+
+        sqlite_query = '''DELETE FROM joto
+                          WHERE id = (SELECT MAX(id) FROM joto);'''
+        cursor.execute(sqlite_query)
+        self.connection.commit()
+        cursor.close()
 
 
 class ImagesManage():
@@ -327,14 +331,10 @@ class Joto():
         self.validate(date)
         return title,date
 
-    def export_text(path):
-        pass
-
     def add_text_only(self):
         print("Date YYYY-MM-DD")
         date = self.text_input.get_input()
         self.validate(date)
-        print("Text only")
         text = self.text_input.get_input()
         self.sqlite_db.add_joto_data(date,text,image="None")# db input order
 
@@ -361,7 +361,7 @@ class Joto():
             text = row[2]
             image = row[3]
 
-            # if prev_date != date and prev_date != None:
+            # Empty line and switch column
             if prev_date != None:
                 if not switch_star:
                     self.latex.snpt_switch_empty_line()
@@ -369,11 +369,14 @@ class Joto():
                     self.latex.snpt_switch_star_empty_line()
                 switch_star = not switch_star
 
-            if prev_date == date:
-                self.latex.snpt_image_without_date(image,text)
-            elif prev_date != date:
-                if image == "None":
-                    self.latex.snpt_just_text(date,text)
+            # Text only
+            if image == "None":
+                self.latex.snpt_just_text(date,text)
+            else:
+                # Multiple images for same date
+                if prev_date == date:
+                    self.latex.snpt_image_without_date(image,text)
+                # Image with text - normal
                 else:
                     self.latex.snpt_image_with_text(date,image,text)
 
@@ -386,7 +389,6 @@ class Joto():
 
 def main(argv):
     db_path = "joto.db"
-    # src_dir = "ingest_images/"
     dst_dir = "images/compressed/"
     achv_dir = "images/original/"
     latex_dir = "latex/"
@@ -399,9 +401,8 @@ def main(argv):
     latex = Latex(latex_dir)
     joto_obj = Joto(sqlite_db,images_manage,text_input,latex)
 
-    # try:
-        # Arguments, short options, long options
-    options, arguments = getopt.getopt(sys.argv[1:] , "" , ["help","scan=", "text", "create_req", "delete_req"]) 
+    options, arguments = getopt.getopt(sys.argv[1:] , "" ,
+        ["help","scan=", "text", "create-req", "delete-req","delete-last-row"]) 
 
     for option, argument in options:
         if option == "--scan":
@@ -414,15 +415,15 @@ def main(argv):
             joto_obj.check_req()
             joto_obj.add_text_only()
             joto_obj.generate_latex()
-        elif option == "--create_req":
+        elif option == "--create-req":
             joto_obj.create_req()
             joto_obj.check_req()
-        elif option == "--delete_req":
+        elif option == "--delete-req":
             joto_obj.delete_req()
+        elif option == "--delete-last-row":
+            sqlite_db.delete_last_row()
         elif option == "--help":
-            print("Options:","--scan","--text","--create_req","--delete_req")
-        else:
-            print("Try --help")
+            print("Options:","--scan","--text","--create-req","--delete-req","--delete-last-row")
 
  
 if __name__ == "__main__":
