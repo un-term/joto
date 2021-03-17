@@ -6,6 +6,8 @@ import subprocess
 from pathlib import Path
 import sqlite3
 import shutil
+import sys
+import getopt
 
 # def photo_integrity_check():
     # try:
@@ -57,28 +59,28 @@ import shutil
 
 
 # defining a decorator
-class Test():
-    def hello_decorator(func):  
+# class Test():
+#     def hello_decorator(func):  
         
-        # inner1 is a Wrapper function in   
-        # which the argument is called  
-       # inner function can access the outer local  
-        # functions like in this case "func"  
-        def inner1(self,*args, **kwargs):  
-            print("Hello, this is before function execution")  
-            # calling the actual function now  
-            # inside the wrapper function.  
-            func(self,*args, **kwargs)
+#         # inner1 is a Wrapper function in   
+#         # which the argument is called  
+#        # inner function can access the outer local  
+#         # functions like in this case "func"  
+#         def inner1(self,*args, **kwargs):  
+#             print("Hello, this is before function execution")  
+#             # calling the actual function now  
+#             # inside the wrapper function.  
+#             func(self,*args, **kwargs)
         
-            print("This is after function execution")  
+#             print("This is after function execution")  
                 
-        return inner1  
+#         return inner1  
     
     
-    # defining a function, to be called inside wrapper
-    @hello_decorator
-    def function_to_be_used(self,word):  
-        print(f"This is inside the function: {word}")  
+#     # defining a function, to be called inside wrapper
+#     @hello_decorator
+#     def function_to_be_used(self,word):  
+#         print(f"This is inside the function: {word}")  
     
     
 # passing 'function_to_be_used' inside the  
@@ -86,8 +88,23 @@ class Test():
 # function_to_be_used = hello_decorator(function_to_be_used)  
     
     
-# calling the function
-test = Test()
-test.function_to_be_used("test")
-# 
+# # calling the function
+# test = Test()
+# test.function_to_be_used("test")
+#
+def main(args):
+    options, arguments = getopt.getopt(
+        sys.argv[1:],                      # Arguments
+        ':',                            # Short option definitions
+        ["scan", "help", "scan="]) # Long option definitions
 
+    for o, a in options:
+        print(o,a)
+        if o == "path":
+            print(a)
+    # if args[0] == "test":
+    #     print("testing import")
+    #     print
+
+if __name__ == "__main__":
+    main(sys.argv[1:])

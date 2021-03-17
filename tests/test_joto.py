@@ -168,7 +168,7 @@ class TestSQLiteDB(unittest.TestCase):
         text_input.get_input.return_value = "Lorem ispum etc"
 
         sqlite_db = joto.JotoSQLiteDB(db_path)
-        images_manage = joto.ImagesManage(size, src_dir, dst_dir, achv_dir)
+        images_manage = joto.ImagesManage(size, dst_dir, achv_dir)
         # text_input = joto.TextInput()
         latex = joto.Latex(latex_dir)
 
@@ -185,7 +185,9 @@ class TestSQLiteDB(unittest.TestCase):
         shutil.copy(image5,src_dir + image5)
         shutil.copy("../" + latex_template,latex_template)
 
-        joto_obj.scan_for_and_add_images_with_text()
+        joto_obj.scan_for_and_add_images_with_text(src_dir)
+        text_input.get_input.return_value = "2020-02-12"
+        joto_obj.add_text_only()
         joto_obj.generate_latex()
 
         all_data = sqlite_db.retrieve_all_data_ordered_by_date()

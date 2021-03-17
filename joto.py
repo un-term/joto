@@ -128,33 +128,26 @@ class JotoSQLiteDB():
 
 
 class ImagesManage():
-    def __init__(self,size, src_dir, dst_dir, achv_dir):
-        # self.compression_size = "1000x1000"
-        # self.src_dir = "ingest_images/"
-        # self.dst_dir = "images/compressed/"
+    def __init__(self,size, dst_dir, achv_dir):
         self.size = size  # compression size
-        self.src_dir = src_dir
+        self.src_dir = None
         self.dst_dir = dst_dir
         self.achv_dir = achv_dir
         self.file_types = ["jpg","JPG","jpeg","JPEG","png","PNG"]
-        self.target_size = 20  #%
-
+        self.target_size = 20  # %
 
     def check_req(self):
-        count = 3
-        if os.path.exists(self.src_dir): count -= 1
+        count = 2
         if os.path.exists(self.dst_dir): count -= 1
         if os.path.exists(self.achv_dir): count -= 1
         if count == 0: return True
         else: return False
 
     def create_req(self):
-        os.makedirs(self.src_dir)
         os.makedirs(self.dst_dir)
         os.makedirs(self.achv_dir)
 
     def delete_req(self):
-        if os.path.exists(self.src_dir): shutil.rmtree(self.src_dir)
         if os.path.exists(self.dst_dir): shutil.rmtree(self.dst_dir)
         if os.path.exists(self.achv_dir): shutil.rmtree(self.achv_dir)
 
@@ -236,7 +229,7 @@ class Latex():
            self._add_empty_line()
         ])
 
-    def snpt_just_text(self,text):
+    def snpt_just_text(self,date,text):
         self.content.extend([
            self._add_date(date),
            self._add_empty_line(),
@@ -321,12 +314,6 @@ class Joto():
         self.images_manage.delete_req()
         self.latex.delete_req()
         print("db and paths deleted")
-        # if os.path.exists(self.sqlite_db.db): os.remove(self.sqlite_db.db)
-        # if os.path.exists(self.images_manage.src_dir): shutil.rmtree(self.images_manage.src_dir)
-        # if os.path.exists(self.images_manage.dst_dir): shutil.rmtree(self.images_manage.dst_dir)
-        # if os.path.exists(self.images_manage.achv_dir): shutil.rmtree(self.images_manage.achv_dir)
-        # if os.path.exists(self.latex.dir): shutil.rmtree(self.latex.dir)
-
 
     def validate(self, date_text):
         try:
@@ -347,12 +334,12 @@ class Joto():
         print("Date YYYY-MM-DD")
         date = self.text_input.get_input()
         self.validate(date)
-        print("Text")
+        print("Text only")
         text = self.text_input.get_input()
-        image = "None"
-        self.sqlite_db.add_joto_data(date,text,file)# db input order
+        self.sqlite_db.add_joto_data(date,text,image="None")# db input order
 
-    def scan_for_and_add_images_with_text(self):
+    def scan_for_and_add_images_with_text(self,scan_path):
+        self.images_manage.src_dir = scan_path
         for root, dirs, files in os.walk(self.images_manage.src_dir): 
             for file in files:
                 self.images_manage.check_filetype(file)
@@ -381,10 +368,11 @@ class Joto():
                 elif switch_star:
                     self.latex.snpt_switch_star_empty_line()
                 switch_star = not switch_star
+
             if prev_date == date:
                 self.latex.snpt_image_without_date(image,text)
             elif prev_date != date:
-                if image == "":
+                if image == "None":
                     self.latex.snpt_just_text(date,text)
                 else:
                     self.latex.snpt_image_with_text(date,image,text)
@@ -398,7 +386,7 @@ class Joto():
 
 def main(argv):
     db_path = "joto.db"
-    src_dir = "ingest_images/"
+    # src_dir = "ingest_images/"
     dst_dir = "images/compressed/"
     achv_dir = "images/original/"
     latex_dir = "latex/"
@@ -411,26 +399,30 @@ def main(argv):
     latex = Latex(latex_dir)
     joto_obj = Joto(sqlite_db,images_manage,text_input,latex)
 
-    try:
-        opts, args = getopt.getopt(argv)
-    except getopt.GetoptError:
-        print('Incorrect input format!')
-        sys.exit(2)
+    # try:
+        # Arguments, short options, long options
+    options, arguments = getopt.getopt(sys.argv[1:] , "" , ["help","scan=", "text", "create_req", "delete_req"]) 
 
-    if args[0] == "create_req":
-        joto_obj.create_req()
-        joto_obj.check_req()
-    if args[0] == "delete_req":
-        joto_obj.delete_req()
-    elif args[0] == "text":
-        joto_obj.check_req()
-        joto_obj.add_text_only()
-        joto_obj.generate_latex()
-    elif args[0] == "scan":
-        joto_obj.check_req()
-        joto_obj.scan_for_and_add_images_with_text()
-        joto_obj.generate_latex()
-    else: print("Choose option: scan text export create_all_requirements")
+    for option, argument in options:
+        if option == "--scan":
+            if os.path.exists(argument):
+                print("Scan: ", argument)
+                joto_obj.check_req()
+                joto_obj.scan_for_and_add_images_with_text(argument)
+                joto_obj.generate_latex()
+        elif option == "--text":
+            joto_obj.check_req()
+            joto_obj.add_text_only()
+            joto_obj.generate_latex()
+        elif option == "--create_req":
+            joto_obj.create_req()
+            joto_obj.check_req()
+        elif option == "--delete_req":
+            joto_obj.delete_req()
+        elif option == "--help":
+            print("Options:","--scan","--text","--create_req","--delete_req")
+        else:
+            print("Try --help")
 
  
 if __name__ == "__main__":
