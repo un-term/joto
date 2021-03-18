@@ -167,7 +167,7 @@ class ImagesManage():
 
     def _compress_image(self,src_filepath,dst_filepath):
         try:
-            subprocess.run(["convert", "-resize", self.size, src_filepath, dst_filepath], check=True)
+            subprocess.run(["convert", "-resize", self.size, src_filepath,"-auto-orient", dst_filepath], check=True)
         except: print("External Image Magik convert failed")
 
     def _check_compression(self,src_filepath,dst_filepath):
