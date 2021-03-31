@@ -388,6 +388,11 @@ class Joto():
 
 
 def main(argv):
+    # Change to script directory
+    # abspath = os.path.abspath(sys.argv[0])
+    # dname = os.path.dirname(abspath)
+    # os.chdir(dname)
+
     db_path = "joto.db"
     dst_dir = "images/compressed/"
     achv_dir = "images/original/"
