@@ -67,16 +67,20 @@ class JotoSQLiteDB():
         self._create_db_table()
 
     def delete_req(self):
-        if os.path.exists(self.db): os.remove(self.db)
+        if os.path.exists(self.db):
+            os.remove(self.db)
 
     @connect
     def _check_for_table(self):
         cursor = self.connection.cursor()
         sqlite_query = ''' SELECT count(name) FROM sqlite_master WHERE type='table' AND name='joto'; '''
         cursor.execute(sqlite_query)
-        if cursor.fetchone()[0] == 1: return True
-        elif cursor.fetchone()[0] == 0: return False
+
+        table_exists = False
+        if cursor.fetchone()[0] == 1:
+            table_exists = True
         cursor.close()
+        return table_exists
 
     @connect
     def _create_db_table(self):
@@ -113,8 +117,9 @@ class JotoSQLiteDB():
         sqlite_select_query = '''SELECT * from joto
                                 ORDER BY date ASC;'''
         cursor.execute(sqlite_select_query)
-        return cursor.fetchall()
+        db_data = cursor.fetchall()
         cursor.close()
+        return db_data
 
     def check_images_integrity(self):
         '''Check that images listed in db are also in images/compressed'''
@@ -122,13 +127,28 @@ class JotoSQLiteDB():
 
     @connect
     def delete_last_row(self):
+        '''Deletes last added row, not oldest'''
         cursor = self.connection.cursor()
+
+        # Get last image filename for deleting
+        sql_query = """select * from joto where id = (SELECT MAX(id) FROM joto);"""
+        cursor.execute(sql_query)
+        records = cursor.fetchall()
+        print("Delete db row: ", records)
+        image = records[0][3]
 
         sqlite_query = '''DELETE FROM joto
                           WHERE id = (SELECT MAX(id) FROM joto);'''
         cursor.execute(sqlite_query)
         self.connection.commit()
         cursor.close()
+
+        return image
+
+   # def delete_row(self,id):
+   #      sql_query = """select * from SqliteDb_developers where id = ?"""
+   #      cursor.execute(sql_query, (id,))
+   #      records = cursor.fetchall()
 
 
 class ImagesManage():
@@ -144,8 +164,10 @@ class ImagesManage():
         count = 2
         if os.path.exists(self.dst_dir): count -= 1
         if os.path.exists(self.achv_dir): count -= 1
-        if count == 0: return True
-        else: return False
+        if count == 0:
+            return True
+        else:
+            return False
 
     def create_req(self):
         os.makedirs(self.dst_dir)
@@ -154,6 +176,12 @@ class ImagesManage():
     def delete_req(self):
         if os.path.exists(self.dst_dir): shutil.rmtree(self.dst_dir)
         if os.path.exists(self.achv_dir): shutil.rmtree(self.achv_dir)
+
+    def delete(self, image):
+        if not image == "None":
+            print("Delete image: ", image)
+            os.remove(self.dst_dir + image)
+            os.remove(self.achv_dir + image)
 
     def compress_and_archive_image(self,name):
         src_filepath = self.src_dir + name
@@ -185,6 +213,7 @@ class ImagesManage():
             if name.endswith(ext):
                 check = True
         if not check: raise Exception("Error: Incorrect file type")
+
 
 class TextInput():
 
@@ -350,6 +379,10 @@ class Joto():
 
                 self.images_manage.compress_and_archive_image(file)
 
+    def delete_last_entry(self):
+        image = self.sqlite_db.delete_last_row()
+        self.images_manage.delete(image)
+
     def generate_latex(self):
         self.latex.copy_template()
         db_data = self.sqlite_db.retrieve_all_data_ordered_by_date()
@@ -425,8 +458,8 @@ def main(argv):
             joto_obj.check_req()
         elif option == "--delete-req":
             joto_obj.delete_req()
-        elif option == "--delete-last-row":
-            sqlite_db.delete_last_row()
+        elif option == "--delete-last-entry":
+            joto_obj.delete_last_entry()
         elif option == "--help":
             print("Options:","--scan","--text","--create-req","--delete-req","--delete-last-row")
 
