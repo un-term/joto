@@ -145,10 +145,25 @@ class JotoSQLiteDB():
 
         return image
 
-   # def delete_row(self,id):
-   #      sql_query = """select * from SqliteDb_developers where id = ?"""
-   #      cursor.execute(sql_query, (id,))
-   #      records = cursor.fetchall()
+
+    @connect
+    def delete_row(self, id):
+        '''Delete row with id'''
+        cursor = self.connection.cursor()
+
+        sql_query = """select * from joto where id = ?"""
+        cursor.execute(sql_query, (id,))
+        records = cursor.fetchall()
+        image = records[0][3]
+
+        print(f"Delete db row {id}")
+        sql_query = '''DELETE FROM joto
+                          WHERE id = ?;'''
+        cursor.execute(sql_query, (id,))
+        self.connection.commit()
+
+        cursor.close()
+        return image
 
 
 class ImagesManage():
@@ -383,6 +398,11 @@ class Joto():
         image = self.sqlite_db.delete_last_row()
         self.images_manage.delete(image)
 
+    def delete_entry(self, id):
+        id = int(id)
+        image = self.sqlite_db.delete_row(id)
+        self.images_manage.delete(image)
+
     def generate_latex(self):
         self.latex.copy_template()
         db_data = self.sqlite_db.retrieve_all_data_ordered_by_date()
@@ -440,7 +460,7 @@ def main(argv):
     joto_obj = Joto(sqlite_db,images_manage,text_input,latex)
 
     options, arguments = getopt.getopt(sys.argv[1:] , "" ,
-        ["help","scan=", "text", "create-req", "delete-req","delete-last-row"]) 
+        ["help","scan=", "text", "create-req", "delete-req","delete-entry=","delete-last-entry"]) 
 
     for option, argument in options:
         if option == "--scan":
@@ -458,6 +478,8 @@ def main(argv):
             joto_obj.check_req()
         elif option == "--delete-req":
             joto_obj.delete_req()
+        elif option == "--delete-entry":
+            joto_obj.delete_entry(argument)
         elif option == "--delete-last-entry":
             joto_obj.delete_last_entry()
         elif option == "--help":
