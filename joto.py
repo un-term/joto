@@ -216,8 +216,11 @@ class ImagesManage():
     def _check_compression(self,src_filepath,dst_filepath):
         original_image_size = int(os.stat(src_filepath)[6])
         compressed_image_size = int(os.stat(dst_filepath)[6])
-        if (compressed_image_size/original_image_size) < (self.target_size/100):
+        # if (compressed_image_size/original_image_size) < (self.target_size/100):
+        if compressed_image_size < 600000:
             return True
+        else:
+            return False
 
     def _archive_original_image(self, src_filepath, achv_filepath):
             shutil.move(src_filepath, achv_filepath)
