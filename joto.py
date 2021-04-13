@@ -483,7 +483,7 @@ def main(argv):
         elif option == "--delete-last-entry":
             joto_obj.delete_last_entry()
         elif option == "--help":
-            print("Options:","--scan","--text","--create-req","--delete-req","--delete-last-row")
+            print("Options:","--scan","--text","--create-req","--delete-req","--delete-last-entry")
 
  
 if __name__ == "__main__":
