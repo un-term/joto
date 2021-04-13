@@ -3,7 +3,7 @@
 import sqlite3
 import datetime
 import os
-import subprocess
+from subprocess import Popen, PIPE
 import sqlite3
 import shutil
 import sys
@@ -206,12 +206,14 @@ class ImagesManage():
         self._compress_image(src_filepath,dst_filepath)
         if self._check_compression(src_filepath,dst_filepath):
             self._archive_original_image(src_filepath,achv_filepath)        
-        else: raise Exception("Compression not worked")
+        else: raise Exception("Compression issue: could be low compression")
 
     def _compress_image(self,src_filepath,dst_filepath):
-        try:
-            subprocess.run(["convert", "-resize", self.size, src_filepath,"-auto-orient", dst_filepath], check=True)
-        except: print("External Image Magik convert failed")
+        '''https://stackoverflow.com/questions/24849998/how-to-catch-exception-output-from-python-subprocess-check-output'''
+        p = Popen(["convert", "-resize", self.size, src_filepath,"-auto-orient", dst_filepath], stdout=PIPE, stderr=PIPE)
+        output, error = p.communicate()
+        if p.returncode != 0:
+            print("Image Magik failed %d %s %s" % (p.returncode, output, error))
 
     def _check_compression(self,src_filepath,dst_filepath):
         original_image_size = int(os.stat(src_filepath)[6])
@@ -332,8 +334,10 @@ class Latex():
         append_multiple_lines_to_file(self.joto_file,self.content)
 
     def latexmk(self):
-        try: subprocess.run(["latexmk", "-pdf", "-jobname=latex/joto", "joto.tex"], check=True)
-        except: print("Latexmk failed")
+        p = Popen(["latexmk", "-pdf", "-jobname=latex/joto", "joto.tex"], stdout=PIPE, stderr=PIPE)
+        output, error = p.communicate()
+        if p.returncode != 0:
+            print("Latexmk failed  %d %s %s" % (p.returncode, output, error))
 
 
 class Joto():
