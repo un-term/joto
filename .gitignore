@@ -5,6 +5,7 @@ text/
 joto.db
 joto.pdf
 joto.tex
+joto.html
 venv/
 tests/images/
 tests/ingest_images/
