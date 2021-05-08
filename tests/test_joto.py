@@ -153,6 +153,7 @@ class TestSQLiteDB(unittest.TestCase):
         image4 = "2020-05-25_Sox_looking.jpg"
         image5 = "2020-07-20_Sox_iron.jpg"
         latex_template = "template.tex"
+        html_template = "template.html"
         size = "1000x1000"
 
         #setup
@@ -162,7 +163,16 @@ class TestSQLiteDB(unittest.TestCase):
         dst_dir = "images/compressed/"
         achv_dir = "images/original/"
         latex_dir = "latex/"
+
+        # Copy required test files 
         #--------------------------------------------------
+        shutil.copy(image1,src_dir + image1)
+        shutil.copy(image2,src_dir + image2)
+        shutil.copy(image3,src_dir + image3)
+        shutil.copy(image4,src_dir + image4)
+        shutil.copy(image5,src_dir + image5)
+        shutil.copy("../" + latex_template, latex_template)
+        shutil.copy("../" + html_template, html_template)
 
         text_input = Mock()
         text_input.get_input.return_value = "Lorem ispum etc"
@@ -171,19 +181,12 @@ class TestSQLiteDB(unittest.TestCase):
         images_manage = joto.ImagesManage(size, dst_dir, achv_dir)
         # text_input = joto.TextInput()
         latex = joto.Latex(latex_dir)
+        html = joto.HTML()
 
-        joto_obj = joto.Joto(sqlite_db,images_manage,text_input,latex)
+        joto_obj = joto.Joto(sqlite_db, images_manage, text_input, html)
         joto_obj.delete_req()
         joto_obj.create_req()
         joto_obj.check_req()
-
-        # Copy required test files 
-        shutil.copy(image1,src_dir + image1)
-        shutil.copy(image2,src_dir + image2)
-        shutil.copy(image3,src_dir + image3)
-        shutil.copy(image4,src_dir + image4)
-        shutil.copy(image5,src_dir + image5)
-        shutil.copy("../" + latex_template,latex_template)
 
         joto_obj.scan_for_and_add_images_with_text(src_dir)
         # Test deleting - scan order dependent on filename - last fat_Sox
@@ -193,7 +196,8 @@ class TestSQLiteDB(unittest.TestCase):
         joto_obj.add_text_only()
         joto_obj.delete_last_entry()
 
-        joto_obj.generate_latex()
+        joto_obj.create_content()
+        joto_obj.write_content()
 
         # all_data = sqlite_db.retrieve_all_data_ordered_by_date()
         # result = False

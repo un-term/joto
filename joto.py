@@ -241,7 +241,27 @@ class TextInput():
         return input("Text: ")
 
 
-class Latex():
+class FormatContent():
+    '''Create list with format content
+       The following methods form a common interface'''
+
+    def create_req(self):
+        pass
+
+    def check_req(self):
+        pass
+
+    def delete_req(self):
+        pass
+
+    def create_content(self):
+        pass
+
+    def write_content(self, content):
+        pass
+
+
+class Latex(FormatContent):
     def __init__(self,latex_dir):
         self.dir = latex_dir
         self.template_file = "template.tex"
@@ -261,8 +281,41 @@ class Latex():
     def delete_req(self):
         if os.path.exists(self.dir): shutil.rmtree(self.dir)
 
-    def copy_template(self):
+    def create_content(self, db_data):
         shutil.copyfile(self.template_file,self.joto_file)
+        date = None
+        switch_star = False
+        for row in db_data:
+            prev_date = date
+            date = row[1]
+            text = row[2]
+            image = row[3]
+
+            # Empty line and switch column
+            if prev_date != None:
+                if not switch_star:
+                    self.snpt_switch_empty_line()
+                elif switch_star:
+                    self.snpt_switch_star_empty_line()
+                switch_star = not switch_star
+
+            # Text only
+            if image == "None":
+                self.snpt_just_text(date,text)
+            else:
+                # Multiple images for same date
+                if prev_date == date:
+                    self.snpt_image_without_date(image,text)
+                # Image with text - normal
+                else:
+                    self.snpt_image_with_text(date,image,text)
+
+        self.snpt_switch_empty_line()
+        self.snpt_end()
+
+    def write_content(self):
+        append_multiple_lines_to_file(self.joto_file, self.content)
+        self.latexmk()
 
     def snpt_image_with_text(self,date,image,text):
         self.content.extend([
@@ -330,9 +383,6 @@ class Latex():
     def _add_end(self):
         return ["\end{paracol}","\end{document}"]
 
-    def append_content_to_latex_file(self):
-        append_multiple_lines_to_file(self.joto_file,self.content)
-
     def latexmk(self):
         p = Popen(["latexmk", "-pdf", "-jobname=latex/joto", "joto.tex"], stdout=PIPE, stderr=PIPE)
         output, error = p.communicate()
@@ -340,20 +390,118 @@ class Latex():
             print("Latexmk failed  %d %s %s" % (p.returncode, output, error))
 
 
+class HTML():
+    def __init__(self):
+        self.template_file = "template.html"
+        self.joto_file = "joto.html"
+        self.image_dir = "images/compressed/"
+        self.content = []
+
+    def create_req(self):
+        pass
+
+    def check_req(self):
+        if os.path.exists(self.template_file):
+            return True
+        else:
+            return False
+
+    def delete_req(self):
+        pass
+
+    def create_content(self, db_data):
+        shutil.copyfile(self.template_file,self.joto_file)
+        date = None
+        text_list = []
+        for row in db_data:
+            prev_date = date
+            date = row[1]
+            text = row[2]
+            image = row[3]
+
+            if prev_date is None:
+                self.snpt_empty_line()
+                self.snpt_date(date)
+                text_list.append(text)
+                if image != "None":
+                    self.snpt_image(image)
+
+            else:
+                if date == prev_date:
+                    if image != "None":
+                        self.snpt_image(image)
+                        text_list.append(text)
+                else:
+                    self.snpt_empty_line()
+                    self.snpt_text(text_list)
+                    text_list.clear()
+                    self.snpt_empty_line()
+                    self.snpt_date(date)
+                    self.snpt_image(image)
+                    text_list.append(text)
+
+        self.snpt_text(text_list)
+        self.snpt_end()
+
+    def write_content(self):
+        append_multiple_lines_to_file(self.joto_file, self.content)
+
+    def snpt_date(self, date):
+        self.content.append(
+           self._add_date(date)
+        )
+
+    def snpt_image(self, image):
+        image_filepath = '"' + self.image_dir + image + '"'
+        self.content.append(
+           self._add_image(image_filepath)
+        )
+
+    def snpt_text(self, text_list):
+        for line in text_list:
+            self.content.append(
+                self._add_text(line)
+            )
+
+    def snpt_empty_line(self):
+        self.content.append(
+           self._add_empty_line()
+        )
+
+    def snpt_end(self):
+        '''Already a list'''
+        self.content.extend(self._add_end())
+
+    def _add_date(self,date):
+        return "<h1>" + date + "</h1>"
+
+    def _add_image(self,image):
+        return "<img src=" + image + ">"  # alt text not added
+
+    def _add_text(self,text):
+        return "<p>" + text + "</p>"
+
+    def _add_empty_line(self):
+        return ""
+
+    def _add_end(self):
+        return ["</body>","</html>"]
+
+
 class Joto():
-    def __init__(self, sqlite_db, images_manage, text_input, latex):
+    def __init__(self, sqlite_db, images_manage, text_input, format):
 
         self.sqlite_db = sqlite_db
         self.images_manage = images_manage
         self.text_input = text_input
-        self.latex = latex
+        self.format = format
 
     def check_req(self):
         '''Not to be used as part of other functions - manual intervention required'''
         if all([
             self.sqlite_db.check_req(),
             self.images_manage.check_req(),
-            self.latex.check_req()
+            self.format.check_req()
             ]):
             print("Requirements met!")
         else: raise Exception("Requiements are NOT met")
@@ -361,13 +509,13 @@ class Joto():
     def create_req(self):
         self.sqlite_db.create_req()
         self.images_manage.create_req()
-        self.latex.create_req()
+        self.format.create_req()
         print("db,table and paths created")
 
     def delete_req(self):
         self.sqlite_db.delete_req()
         self.images_manage.delete_req()
-        self.latex.delete_req()
+        self.format.delete_req()
         print("db and paths deleted")
 
     def validate(self, date_text):
@@ -410,41 +558,12 @@ class Joto():
         image = self.sqlite_db.delete_row(id)
         self.images_manage.delete(image)
 
-    def generate_latex(self):
-        self.latex.copy_template()
+    def create_content(self):
         db_data = self.sqlite_db.retrieve_all_data_ordered_by_date()
-        date = None
-        switch_star = False
-        for row in db_data:
-            prev_date = date
-            date = row[1]
-            text = row[2]
-            image = row[3]
+        self.format.create_content(db_data)
 
-            # Empty line and switch column
-            if prev_date != None:
-                if not switch_star:
-                    self.latex.snpt_switch_empty_line()
-                elif switch_star:
-                    self.latex.snpt_switch_star_empty_line()
-                switch_star = not switch_star
-
-            # Text only
-            if image == "None":
-                self.latex.snpt_just_text(date,text)
-            else:
-                # Multiple images for same date
-                if prev_date == date:
-                    self.latex.snpt_image_without_date(image,text)
-                # Image with text - normal
-                else:
-                    self.latex.snpt_image_with_text(date,image,text)
-
-        self.latex.snpt_switch_empty_line()
-        self.latex.snpt_end()
-
-        self.latex.append_content_to_latex_file()
-        self.latex.latexmk()
+    def write_content(self):
+        self.format.write_content()
 
 
 def main(argv):
@@ -464,10 +583,13 @@ def main(argv):
     images_manage = ImagesManage(size, dst_dir, achv_dir)
     text_input = TextInput()
     latex = Latex(latex_dir)
-    joto_obj = Joto(sqlite_db,images_manage,text_input,latex)
+    html = HTML()
+
+    # Specify format type here
+    joto_obj = Joto(sqlite_db, images_manage, text_input, html)
 
     options, arguments = getopt.getopt(sys.argv[1:] , "" ,
-        ["help","scan=", "text", "create-req", "delete-req","delete-entry=","delete-last-entry"]) 
+        ["help","scan=", "text", "create-req", "delete-req","delete-entry=","delete-last-entry", "create-content"]) 
 
     for option, argument in options:
         if option == "--scan":
@@ -475,11 +597,16 @@ def main(argv):
                 print("Scan: ", argument)
                 joto_obj.check_req()
                 joto_obj.scan_for_and_add_images_with_text(argument)
-                joto_obj.generate_latex()
+                joto_obj.create_content()
+                joto_obj.write_content()
         elif option == "--text":
             joto_obj.check_req()
             joto_obj.add_text_only()
-            joto_obj.generate_latex()
+            joto_obj.create_content()
+            joto_obj.write_content()
+        elif option == "--create-content":
+            joto_obj.create_content()
+            joto_obj.write_content()
         elif option == "--create-req":
             joto_obj.create_req()
             joto_obj.check_req()
@@ -490,7 +617,7 @@ def main(argv):
         elif option == "--delete-last-entry":
             joto_obj.delete_last_entry()
         elif option == "--help":
-            print("Options:","--scan","--text","--create-req","--delete-req","--delete-last-entry")
+            print("Options:","--scan","--text","--create-content","--create-req","--delete-req","--delete-last-entry")
 
  
 if __name__ == "__main__":
