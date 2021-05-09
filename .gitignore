@@ -10,7 +10,8 @@ venv/
 tests/images/
 tests/ingest_images/
 tests/test.db
-test.db
 venv/
 __pycache__
 *.csv
+tests/template.tex
+tests/template.html
