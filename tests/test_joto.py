@@ -147,11 +147,11 @@ class TestSQLiteDB(unittest.TestCase):
         print("Integration test: adding image")
         print("------------------------------------------")
 
-        image1 = "2020-03-17_fat_Sox.jpg"
-        image2 = "2020-03-17_Sox.jpg"
-        image3 = "2020-07-18_Sox_laptop.jpg"
-        image4 = "2020-05-25_Sox_looking.jpg"
-        image5 = "2020-07-20_Sox_iron.jpg"
+        image1 = "2021-04-21_parrots.jpg"
+        image2 = "2021-01-02_fox.jpg"
+        image3 = "2021-03-04_cow.jpg"
+        image4 = "2020-11-10_giraffe.jpg"
+        image5 = "2021-01-02_bird.jpg"
         latex_template = "template.tex"
         html_template = "template.html"
         size = "1000x1000"
@@ -166,7 +166,7 @@ class TestSQLiteDB(unittest.TestCase):
 
         # Copy required test files 
         #--------------------------------------------------
-        shutil.copy(image1,src_dir + image1)
+        shutil.copy(image1,src_dir + image1)  # deleted as part of test
         shutil.copy(image2,src_dir + image2)
         shutil.copy(image3,src_dir + image3)
         shutil.copy(image4,src_dir + image4)
