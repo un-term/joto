@@ -219,7 +219,7 @@ class ImagesManage():
         original_image_size = int(os.stat(src_filepath)[6])
         compressed_image_size = int(os.stat(dst_filepath)[6])
         # if (compressed_image_size/original_image_size) < (self.target_size/100):
-        if compressed_image_size < 600000:
+        if compressed_image_size < 800000:
             return True
         else:
             return False
