@@ -9,6 +9,7 @@ Generate a photo journal from ingested images and text that are stored in an SQL
 * git
 * minimum Python 3.9
 * sqlite3
+* ImageMagick - compressing images
 
 ## Installation
 
