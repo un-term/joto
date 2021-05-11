@@ -545,9 +545,9 @@ class Joto():
                 title,date = self.extract_attributes(file)
                 print(title)
                 text = self.text_input.get_input()
-                self.sqlite_db.add_joto_data(date,text,file)# db input order
-
                 self.images_manage.compress_and_archive_image(file)
+                # Add to db after compressing image - if compression fail, not added to db
+                self.sqlite_db.add_joto_data(date,text,file)# db input order
 
     def delete_last_entry(self):
         image = self.sqlite_db.delete_last_row()
