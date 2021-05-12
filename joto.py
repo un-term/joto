@@ -216,6 +216,12 @@ class ImagesManage():
             print("Image Magik failed %d %s %s" % (p.returncode, output, error))
 
     def _check_compression(self,src_filepath,dst_filepath):
+        if os.path.exists(dst_filepath):
+            return True
+        else:
+            return False
+
+    def _check_compression_size(self,src_filepath,dst_filepath):
         original_image_size = int(os.stat(src_filepath)[6])
         compressed_image_size = int(os.stat(dst_filepath)[6])
         # if (compressed_image_size/original_image_size) < (self.target_size/100):
