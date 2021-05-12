@@ -234,12 +234,9 @@ class ImagesManage():
             shutil.move(src_filepath, achv_filepath)
 
     def check_filetype(self,name):
-        check = False
         for ext in self.file_types:
             if name.endswith(ext):
-                check = True
-        if not check: raise Exception("Error: Incorrect file type")
-
+                return True
 
 class TextInput():
 
@@ -547,13 +544,15 @@ class Joto():
         self.images_manage.src_dir = scan_path
         for root, dirs, files in os.walk(self.images_manage.src_dir): 
             for file in files:
-                self.images_manage.check_filetype(file)
-                title,date = self.extract_attributes(file)
-                print(title)
-                text = self.text_input.get_input()
-                self.images_manage.compress_and_archive_image(file)
-                # Add to db after compressing image - if compression fail, not added to db
-                self.sqlite_db.add_joto_data(date,text,file)# db input order
+                if self.images_manage.check_filetype(file):
+                    title,date = self.extract_attributes(file)
+                    print(title)
+                    text = self.text_input.get_input()
+                    self.images_manage.compress_and_archive_image(file)
+                    # Add to db after compressing image - if compression fail, not added to db
+                    self.sqlite_db.add_joto_data(date,text,file)# db input order
+                else:
+                    print("Ignoring: ", file)
 
     def delete_last_entry(self):
         image = self.sqlite_db.delete_last_row()

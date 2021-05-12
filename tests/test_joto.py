@@ -152,6 +152,7 @@ class TestSQLiteDB(unittest.TestCase):
         image3 = "2021-03-04_cow.jpg"
         image4 = "2020-11-10_giraffe.jpg"
         image5 = "2021-01-02_bird.jpg"
+        not_image ="test"
         latex_template = "template.tex"
         html_template = "template.html"
         size = "1000x1000"
@@ -171,6 +172,7 @@ class TestSQLiteDB(unittest.TestCase):
         shutil.copy(image3,src_dir + image3)
         shutil.copy(image4,src_dir + image4)
         shutil.copy(image5,src_dir + image5)
+        shutil.copy(not_image,src_dir + not_image)
         shutil.copy("../" + latex_template, latex_template)
         shutil.copy("../" + html_template, html_template)
 
