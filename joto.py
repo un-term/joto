@@ -434,13 +434,16 @@ class HTML():
                     if image != "None":
                         self.snpt_image(image)
                         text_list.append(text)
+                    else:
+                        text_list.append(text)
                 else:
                     self.snpt_empty_line()
                     self.snpt_text(text_list)
                     text_list.clear()
                     self.snpt_empty_line()
                     self.snpt_date(date)
-                    self.snpt_image(image)
+                    if image != "None":
+                        self.snpt_image(image)
                     text_list.append(text)
 
         self.snpt_text(text_list)

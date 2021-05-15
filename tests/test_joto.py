@@ -198,6 +198,12 @@ class TestSQLiteDB(unittest.TestCase):
         joto_obj.add_text_only()
         joto_obj.delete_last_entry()
 
+        # Test text for same date
+        text_input.get_input.return_value = "2020-02-12"
+        joto_obj.add_text_only()
+        text_input.get_input.return_value = "2020-02-12"
+        joto_obj.add_text_only()
+
         joto_obj.create_content()
         joto_obj.write_content()
 
