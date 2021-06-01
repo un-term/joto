@@ -115,7 +115,7 @@ class JotoSQLiteDB():
         cursor = self.connection.cursor()
 
         sqlite_select_query = '''SELECT * from joto
-                                ORDER BY date ASC;'''
+                                ORDER BY date DESC;'''
         cursor.execute(sqlite_select_query)
         db_data = cursor.fetchall()
         cursor.close()
