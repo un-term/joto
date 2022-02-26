@@ -164,6 +164,7 @@ class TestSQLiteDB(unittest.TestCase):
         dst_dir = "images/compressed/"
         achv_dir = "images/original/"
         latex_dir = "latex/"
+        img_path = src_dir + image5
 
         # Copy required test files 
         #--------------------------------------------------
@@ -190,19 +191,23 @@ class TestSQLiteDB(unittest.TestCase):
         joto_obj.create_req()
         joto_obj.check_req()
 
+        # Scanning directory
         joto_obj.scan_for_and_add_images_with_text(src_dir)
         # Test deleting - scan order dependent on filename - last fat_Sox
         joto_obj.delete_entry(1)
 
-        text_input.get_input.return_value = "2020-02-12"
-        joto_obj.add_text_only()
-        joto_obj.delete_last_entry()
+        # text_input.get_input.return_value = "2020-02-12"
+        # joto_obj.add_text_only()
+        # joto_obj.delete_last_entry()
 
         # Test text for same date
-        text_input.get_input.return_value = "2020-02-12"
-        joto_obj.add_text_only()
-        text_input.get_input.return_value = "2020-02-12"
-        joto_obj.add_text_only()
+        # text_input.get_input.return_value = "2020-02-12"
+        # joto_obj.add_text_only()
+        # text_input.get_input.return_value = "2020-02-12"
+        # joto_obj.add_text_only()
+
+        # Add image using path
+        # joto_obj.add_image_from_path(img_path)
 
         joto_obj.create_content()
         joto_obj.write_content()
