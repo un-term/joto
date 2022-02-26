@@ -209,11 +209,15 @@ class ImagesManage():
             raise Exception("Compression issue: could be low compression")
             return False
 
-    def archive_image(self, image_filename, image_path):
+    def archive_image_move(self, image_filename, image_path):
         src_filepath = image_path
         achv_filepath = self.achv_dir + image_filename
+        shutil.move(src_filepath, achv_filepath)
 
-        self._archive_original_image(src_filepath,achv_filepath)        
+    def archive_image_copy(self, image_filename, image_path):
+        src_filepath = image_path
+        achv_filepath = self.achv_dir + image_filename
+        shutil.copyfile(src_filepath, achv_filepath)
 
     def _compress_with_imagemagick(self,src_filepath,dst_filepath):
         '''https://stackoverflow.com/questions/24849998/how-to-catch-exception-output-from-python-subprocess-check-output'''
@@ -563,7 +567,7 @@ class Joto():
                     image_path = scan_path + image_filename
                     compress_status = self.images_manage.compress_image(image_filename, image_path)
                     if compress_status:
-                        self.images_manage.archive_image(image_filename, image_path)
+                        self.images_manage.archive_image_move(image_filename, image_path)
                         # Add to db after compressing image - if compression fail, not added to db
                         self.sqlite_db.add_joto_data(date,text,image_filename)# db input order
                 else:
@@ -577,6 +581,7 @@ class Joto():
             text = self.text_input.get_input()
             compress_status = self.images_manage.compress_image(image_filename, image_path)
             if compress_status:
+                self.images_manage.archive_image_copy(image_filename, image_path)
                 # Add to db after compressing image - if compression fail, not added to db
                 self.sqlite_db.add_joto_data(date,text,image_filename)# db input order
         else:
