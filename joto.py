@@ -169,7 +169,6 @@ class JotoSQLiteDB():
 class ImagesManage():
     def __init__(self,size, dst_dir, achv_dir):
         self.size = size  # compression size
-        self.src_dir = None
         self.dst_dir = dst_dir
         self.achv_dir = achv_dir
         self.file_types = ["jpg","JPG","jpeg","JPEG","png","PNG"]
@@ -198,10 +197,10 @@ class ImagesManage():
             os.remove(self.dst_dir + image)
             os.remove(self.achv_dir + image)
 
-    def compress_and_archive_image(self,name):
-        src_filepath = self.src_dir + name
-        dst_filepath = self.dst_dir + name
-        achv_filepath = self.achv_dir + name
+    def compress_and_archive_image(self, image_filename, image_path):
+        src_filepath = image_path
+        dst_filepath = self.dst_dir + image_filename
+        achv_filepath = self.achv_dir + image_filename
 
         self._compress_image(src_filepath,dst_filepath)
         if self._check_compression(src_filepath,dst_filepath):
@@ -536,6 +535,9 @@ class Joto():
         self.validate(date)
         return title,date
 
+    def extract_filename(self, filename):
+        return os.path.basename(filename)
+
     def add_text_only(self):
         print("Date YYYY-MM-DD")
         date = self.text_input.get_input()
@@ -544,18 +546,30 @@ class Joto():
         self.sqlite_db.add_joto_data(date,text,image="None")# db input order
 
     def scan_for_and_add_images_with_text(self,scan_path):
-        self.images_manage.src_dir = scan_path
-        for root, dirs, files in os.walk(self.images_manage.src_dir): 
-            for file in files:
-                if self.images_manage.check_filetype(file):
-                    title,date = self.extract_attributes(file)
+        for root, dirs, files in os.walk(scan_path): 
+            for image_filename in files:
+                if self.images_manage.check_filetype(image_filename):
+                    title,date = self.extract_attributes(image_filename)
                     print(title)
                     text = self.text_input.get_input()
-                    self.images_manage.compress_and_archive_image(file)
+                    image_path = scan_path + image_filename
+                    self.images_manage.compress_and_archive_image(image_filename, image_path)
                     # Add to db after compressing image - if compression fail, not added to db
-                    self.sqlite_db.add_joto_data(date,text,file)# db input order
+                    self.sqlite_db.add_joto_data(date,text,image_filename)# db input order
                 else:
-                    print("Ignoring: ", file)
+                    print("Ignoring: ", image_filename)
+
+    def add_image_from_path(self, image_path):
+        if self.images_manage.check_filetype(image_path):
+            image_filename = self.extract_filename(image_path)
+            title,date = self.extract_attributes(image_filename)
+                    print(title)
+                    text = self.text_input.get_input()
+            self.images_manage.compress_and_archive_image(image_filename, image_path)
+                    # Add to db after compressing image - if compression fail, not added to db
+            self.sqlite_db.add_joto_data(date,text,image_filename)# db input order
+                else:
+            print("Wrong path: ", image_path)
 
     def delete_last_entry(self):
         image = self.sqlite_db.delete_last_row()
