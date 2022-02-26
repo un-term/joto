@@ -597,7 +597,7 @@ def main(argv):
     joto_obj = Joto(sqlite_db, images_manage, text_input, html)
 
     options, arguments = getopt.getopt(sys.argv[1:] , "" ,
-        ["help","scan=", "text", "create-req", "delete-req","delete-entry=","delete-last-entry", "create-content"]) 
+        ["help","scan=","image-path=", "text", "create-req", "delete-req","delete-entry=","delete-last-entry", "create-content"]) 
 
     for option, argument in options:
         if option == "--scan":
@@ -607,6 +607,15 @@ def main(argv):
                 joto_obj.scan_for_and_add_images_with_text(argument)
                 joto_obj.create_content()
                 joto_obj.write_content()
+        elif option == "--image-path":
+            if os.path.isfile(argument):
+                print("Adding image by path")
+                joto_obj.check_req()
+                joto_obj.add_image_from_path(argument)
+                joto_obj.create_content()
+                joto_obj.write_content()
+            else:
+                print("wrong path")
         elif option == "--text":
             joto_obj.check_req()
             joto_obj.add_text_only()
@@ -625,7 +634,7 @@ def main(argv):
         elif option == "--delete-last-entry":
             joto_obj.delete_last_entry()
         elif option == "--help":
-            print("Options:","--scan","--text","--create-content","--create-req","--delete-req","--delete-last-entry")
+            print("Options:","--scan","--image-path","--text","--create-content","--create-req","--delete-req","--delete-last-entry")
 
  
 if __name__ == "__main__":
