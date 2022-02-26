@@ -197,17 +197,25 @@ class ImagesManage():
             os.remove(self.dst_dir + image)
             os.remove(self.achv_dir + image)
 
-    def compress_and_archive_image(self, image_filename, image_path):
+    def compress_image(self, image_filename, image_path):
         src_filepath = image_path
         dst_filepath = self.dst_dir + image_filename
         achv_filepath = self.achv_dir + image_filename
 
-        self._compress_image(src_filepath,dst_filepath)
+        self._compress_with_imagemagick(src_filepath,dst_filepath)
         if self._check_compression(src_filepath,dst_filepath):
-            self._archive_original_image(src_filepath,achv_filepath)        
-        else: raise Exception("Compression issue: could be low compression")
+            return True        
+        else: 
+            raise Exception("Compression issue: could be low compression")
+            return False
 
-    def _compress_image(self,src_filepath,dst_filepath):
+    def archive_image(self, image_filename, image_path):
+        src_filepath = image_path
+        achv_filepath = self.achv_dir + image_filename
+
+        self._archive_original_image(src_filepath,achv_filepath)        
+
+    def _compress_with_imagemagick(self,src_filepath,dst_filepath):
         '''https://stackoverflow.com/questions/24849998/how-to-catch-exception-output-from-python-subprocess-check-output'''
         p = Popen(["convert", "-resize", self.size, src_filepath,"-auto-orient", dst_filepath], stdout=PIPE, stderr=PIPE)
         output, error = p.communicate()
@@ -553,9 +561,11 @@ class Joto():
                     print(title)
                     text = self.text_input.get_input()
                     image_path = scan_path + image_filename
-                    self.images_manage.compress_and_archive_image(image_filename, image_path)
-                    # Add to db after compressing image - if compression fail, not added to db
-                    self.sqlite_db.add_joto_data(date,text,image_filename)# db input order
+                    compress_status = self.images_manage.compress_image(image_filename, image_path)
+                    if compress_status:
+                        self.images_manage.archive_image(image_filename, image_path)
+                        # Add to db after compressing image - if compression fail, not added to db
+                        self.sqlite_db.add_joto_data(date,text,image_filename)# db input order
                 else:
                     print("Ignoring: ", image_filename)
 
@@ -565,9 +575,10 @@ class Joto():
             title,date = self.extract_attributes(image_filename)
             print(title)
             text = self.text_input.get_input()
-            self.images_manage.compress_and_archive_image(image_filename, image_path)
-            # Add to db after compressing image - if compression fail, not added to db
-            self.sqlite_db.add_joto_data(date,text,image_filename)# db input order
+            compress_status = self.images_manage.compress_image(image_filename, image_path)
+            if compress_status:
+                # Add to db after compressing image - if compression fail, not added to db
+                self.sqlite_db.add_joto_data(date,text,image_filename)# db input order
         else:
             print("Wrong path: ", image_path)
 
