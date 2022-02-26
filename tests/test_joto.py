@@ -192,9 +192,9 @@ class TestSQLiteDB(unittest.TestCase):
         joto_obj.check_req()
 
         # Scanning directory
-        joto_obj.scan_for_and_add_images_with_text(src_dir)
+        # joto_obj.scan_for_and_add_images_with_text(src_dir)
         # Test deleting - scan order dependent on filename - last fat_Sox
-        joto_obj.delete_entry(1)
+        # joto_obj.delete_entry(1)
 
         # text_input.get_input.return_value = "2020-02-12"
         # joto_obj.add_text_only()
@@ -207,7 +207,7 @@ class TestSQLiteDB(unittest.TestCase):
         # joto_obj.add_text_only()
 
         # Add image using path
-        # joto_obj.add_image_from_path(img_path)
+        joto_obj.add_image_from_path(img_path)
 
         joto_obj.create_content()
         joto_obj.write_content()
