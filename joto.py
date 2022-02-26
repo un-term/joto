@@ -563,12 +563,12 @@ class Joto():
         if self.images_manage.check_filetype(image_path):
             image_filename = self.extract_filename(image_path)
             title,date = self.extract_attributes(image_filename)
-                    print(title)
-                    text = self.text_input.get_input()
+            print(title)
+            text = self.text_input.get_input()
             self.images_manage.compress_and_archive_image(image_filename, image_path)
-                    # Add to db after compressing image - if compression fail, not added to db
+            # Add to db after compressing image - if compression fail, not added to db
             self.sqlite_db.add_joto_data(date,text,image_filename)# db input order
-                else:
+        else:
             print("Wrong path: ", image_path)
 
     def delete_last_entry(self):
