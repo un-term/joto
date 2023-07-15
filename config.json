@@ -1,6 +1,0 @@
-{
-    "sqlite_db_path": "joto.db",
-    "original_image_dirpath": "images/original/",
-    "compressed_image_dirpath": "images/compressed/",
-    "image_size": "1000x1000"
-}
