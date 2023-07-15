@@ -8,6 +8,7 @@ import sqlite3
 import shutil
 import sys
 import getopt
+import json
 
 def append_multiple_lines_to_file(file_name, lines_to_append):
     # Open the file in append & read mode ('a+')
@@ -354,7 +355,23 @@ class HTML():
     def _add_end(self):
         return ["</body>","</html>"]
 
+class JsonConfig():
+    def __init__(self, config_path):
+        self.config_path = config_path
+        self.sqlite_db_path = None
+        self.original_image_dirpath = None
+        self.compressed_image_dirpath = None
+        self.image_size = None
+        self.set_config_values()
 
+    def set_config_values(self):
+        with open(self.config_path, "r") as read_file:
+            data = json.load(read_file)
+            self.sqlite_db_path = data["sqlite_db_path"]
+            self.original_image_dirpath = data["original_image_dirpath"]
+            self.compressed_image_dirpath = data["compressed_image_dirpath"]
+            self.image_size = data["image_size"]
+            
 class Joto():
     def __init__(self, sqlite_db, images_manage, text_input, format):
 
@@ -460,22 +477,26 @@ def main(argv):
     # dname = os.path.dirname(abspath)
     # os.chdir(dname)
 
-    db_path = "joto.db"
-    dst_dir = "images/compressed/"
-    achv_dir = "images/original/"
-    size = "1000x1000"
-    print(f"SQLite db path: {db_path}")
-
-    sqlite_db = JotoSQLiteDB(db_path)
-    images_manage = ImagesManage(size, dst_dir, achv_dir)
-    text_input = TextInput()
-    html = HTML()
-
     # Specify format type here
-    joto_obj = Joto(sqlite_db, images_manage, text_input, html)
 
     options, arguments = getopt.getopt(sys.argv[1:] , "" ,
-        ["help","scan=","image-path=", "text", "create-req", "delete-req","delete-entry=","delete-last-entry", "create-content"]) 
+        ["help","config-file=","scan=","image-path=", "text", "create-req", "delete-req","delete-entry=","delete-last-entry", "create-content"])
+
+    # Required
+    config_file_status = False
+    for option, argument in options:
+        if option == "--config-file":
+            if os.path.isfile(argument):
+                json_config = JsonConfig(argument)
+                sqlite_db = JotoSQLiteDB(json_config.sqlite_db_path)
+                images_manage = ImagesManage(json_config.image_size, json_config.original_image_dirpath, json_config.compressed_image_dirpath)
+                text_input = TextInput()
+                html = HTML()
+                joto_obj = Joto(sqlite_db, images_manage, text_input, html)
+                config_file_status = True
+
+    if not config_file_status:
+        raise Exception("config file required") 
 
     for option, argument in options:
         if option == "--scan":
@@ -512,7 +533,7 @@ def main(argv):
         elif option == "--delete-last-entry":
             joto_obj.delete_last_entry()
         elif option == "--help":
-            print("Options:","--scan","--image-path","--text","--create-content","--create-req","--delete-req","--delete-last-entry")
+            print("Options:","--config-file","--scan","--image-path","--text","--create-content","--create-req","--delete-req","--delete-last-entry")
 
  
 if __name__ == "__main__":
