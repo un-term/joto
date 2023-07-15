@@ -256,10 +256,10 @@ class TextInput():
         return input("Text: ")
 
 class HTML():
-    def __init__(self):
-        self.template_file = "template.html"
-        self.joto_file = "joto.html"
-        self.image_dir = "images/compressed/"
+    def __init__(self, template_file, output_html_file, image_dir):
+        self.template_file = template_file
+        self.output_html_file = output_html_file
+        self.image_dir = image_dir
         self.content = []
 
     def create_req(self):
@@ -275,7 +275,7 @@ class HTML():
         pass
 
     def create_content(self, db_data):
-        shutil.copyfile(self.template_file,self.joto_file)
+        shutil.copyfile(self.template_file,self.output_html_file)
         date = None
         text_list = []
         for row in db_data:
@@ -312,7 +312,7 @@ class HTML():
         self.snpt_end()
 
     def write_content(self):
-        append_multiple_lines_to_file(self.joto_file, self.content)
+        append_multiple_lines_to_file(self.output_html_file, self.content)
 
     def snpt_date(self, date):
         self.content.append(
@@ -362,6 +362,7 @@ class JsonConfig():
         self.original_image_dirpath = None
         self.compressed_image_dirpath = None
         self.image_size = None
+        self.html_output_path = None
         self.set_config_values()
 
     def set_config_values(self):
@@ -371,6 +372,7 @@ class JsonConfig():
             self.original_image_dirpath = data["original_image_dirpath"]
             self.compressed_image_dirpath = data["compressed_image_dirpath"]
             self.image_size = data["image_size"]
+            self.html_output_path = data["html_output_path"]
             
 class Joto():
     def __init__(self, sqlite_db, images_manage, text_input, format):
@@ -491,7 +493,7 @@ def main(argv):
                 sqlite_db = JotoSQLiteDB(json_config.sqlite_db_path)
                 images_manage = ImagesManage(json_config.image_size, json_config.original_image_dirpath, json_config.compressed_image_dirpath)
                 text_input = TextInput()
-                html = HTML()
+                html = HTML("template.html", json_config.html_output_path, json_config.compressed_image_dirpath)
                 joto_obj = Joto(sqlite_db, images_manage, text_input, html)
                 config_file_status = True
 
