@@ -15,12 +15,11 @@ parent_dir = os.path.dirname(current_dir)
 sys.path.insert(0, parent_dir) 
 import joto
 
-
 class TestSQLiteDB(unittest.TestCase):
 
     def test_all(self):
         print("------------------------------------------")
-        print("Integration test: adding image")
+        print("Add new entry")
         print("------------------------------------------")
 
         image1 = "2021-04-21_parrots.jpg"
@@ -28,41 +27,20 @@ class TestSQLiteDB(unittest.TestCase):
         image3 = "2021-03-04_cow.jpg"
         image4 = "2020-11-10_giraffe.jpg"
         image5 = "2021-01-02_bird.jpg"
-        not_image ="test"
-        latex_template = "template.tex"
         html_template = "template.html"
         size = "1000x1000"
 
-        #setup
-        #--------------------------------------------------
-        db_path = "test.db"
-        src_dir = "ingest_images/"
-        dst_dir = "images/compressed/"
-        achv_dir = "images/original/"
-        latex_dir = "latex/"
-        img_path = src_dir + image5
+        # load config and setup objects
+        if os.path.isfile("test_config.json"):
+            json_config = joto.JsonConfig("test_config.json")
+        else:
+            raise Exception("config file required") 
 
-        # Copy required test files 
-        #--------------------------------------------------
-        shutil.copy(image1,src_dir + image1)  # deleted as part of test
-        shutil.copy(image2,src_dir + image2)
-        shutil.copy(image3,src_dir + image3)
-        shutil.copy(image4,src_dir + image4)
-        shutil.copy(image5,src_dir + image5)
-        shutil.copy(not_image,src_dir + not_image)
-        shutil.copy("../" + latex_template, latex_template)
-        shutil.copy("../" + html_template, html_template)
+        sqlite_db = joto.JotoSQLiteDB(json_config.sqlite_db_path)
+        images_manage = joto.ImagesManage(json_config.image_size, json_config.original_image_dirpath, json_config.compressed_image_dirpath)
+        html = joto.HTML("./templates/output.html", json_config.html_output_path, json_config.compressed_image_dirpath)
+        joto_obj = joto.Joto(sqlite_db, images_manage, html)
 
-        text_input = Mock()
-        text_input.get_input.return_value = "Lorem ispum etc"
-
-        sqlite_db = joto.JotoSQLiteDB(db_path)
-        images_manage = joto.ImagesManage(size, dst_dir, achv_dir)
-        # text_input = joto.TextInput()
-        latex = joto.Latex(latex_dir)
-        html = joto.HTML()
-
-        joto_obj = joto.Joto(sqlite_db, images_manage, text_input, html)
         joto_obj.delete_req()
         joto_obj.create_req()
         joto_obj.check_req()
@@ -83,10 +61,10 @@ class TestSQLiteDB(unittest.TestCase):
         # joto_obj.add_text_only()
 
         # Add image using path
-        joto_obj.add_image_from_path(img_path)
+        # joto_obj.add_image_from_path(img_path)
 
-        joto_obj.create_content()
-        joto_obj.write_content()
+        # joto_obj.create_content()
+        # joto_obj.write_content()
 
         # all_data = sqlite_db.retrieve_all_data_ordered_by_date()
         # result = False

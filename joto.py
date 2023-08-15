@@ -58,6 +58,7 @@ class JotoSQLiteDB():
         return wrap
 
     def check_req(self):
+        print("TESTING" + self.db)
         if os.path.exists(self.db) and self._check_for_table():
             return True
         else:
@@ -375,22 +376,28 @@ class JsonConfig():
             self.html_output_path = data["html_output_path"]
             
 class Joto():
-    def __init__(self, sqlite_db, images_manage, text_input, format):
+    def __init__(self, sqlite_db, images_manage, format):
 
         self.sqlite_db = sqlite_db
         self.images_manage = images_manage
-        self.text_input = text_input
         self.format = format
 
     def check_req(self):
         '''Not to be used as part of other functions - manual intervention required'''
-        if all([
-            self.sqlite_db.check_req(),
-            self.images_manage.check_req(),
-            self.format.check_req()
-            ]):
-            print("Requirements met!")
-        else: raise Exception("Requiements are NOT met")
+        print("")
+        print("Checking requirements")
+        if not self.sqlite_db.check_req(): raise Exception("sqlite requirements are not met")
+        if not self.images_manage.check_req(): raise Exception("images_manage requirements are not met")
+        if not self.format.check_req(): raise Exception("format requirements are not met")
+        print("Requirements met")
+
+        # if all([
+        #     self.sqlite_db.check_req(),
+        #     self.images_manage.check_req(),
+        #     self.format.check_req()
+        #     ]):
+        #     print("Requirements met!")
+        # else: raise Exception("Requiements are NOT met")
 
     def create_req(self):
         self.sqlite_db.create_req()
@@ -418,36 +425,12 @@ class Joto():
 
     def extract_filename(self, filename):
         return os.path.basename(filename)
-
-    def add_text_only(self):
-        print("Date YYYY-MM-DD")
-        date = self.text_input.get_input()
+    
+    def add_new_entry(self, date, text, image_path):
         self.validate(date)
-        text = self.text_input.get_input()
-        self.sqlite_db.add_joto_data(date,text,image="None")# db input order
-
-    def scan_for_and_add_images_with_text(self,scan_path):
-        for root, dirs, files in os.walk(scan_path): 
-            for image_filename in files:
-                if self.images_manage.check_filetype(image_filename):
-                    title,date = self.extract_attributes(image_filename)
-                    print(title)
-                    text = self.text_input.get_input()
-                    image_path = scan_path + image_filename
-                    compress_status = self.images_manage.compress_image(image_filename, image_path)
-                    if compress_status:
-                        self.images_manage.archive_image_move(image_filename, image_path)
-                        # Add to db after compressing image - if compression fail, not added to db
-                        self.sqlite_db.add_joto_data(date,text,image_filename)# db input order
-                else:
-                    print("Ignoring: ", image_filename)
-
-    def add_image_from_path(self, image_path):
         if self.images_manage.check_filetype(image_path):
             image_filename = self.extract_filename(image_path)
-            title,date = self.extract_attributes(image_filename)
-            print(title)
-            text = self.text_input.get_input()
+            text = text
             compress_status = self.images_manage.compress_image(image_filename, image_path)
             if compress_status:
                 self.images_manage.archive_image_copy(image_filename, image_path)
@@ -455,7 +438,7 @@ class Joto():
                 self.sqlite_db.add_joto_data(date,text,image_filename)# db input order
         else:
             print("Wrong path: ", image_path)
-
+        
     def delete_last_entry(self):
         image = self.sqlite_db.delete_last_row()
         self.images_manage.delete(image)
@@ -471,72 +454,3 @@ class Joto():
 
     def write_content(self):
         self.format.write_content()
-
-
-def main(argv):
-    # Change to script directory
-    # abspath = os.path.abspath(sys.argv[0])
-    # dname = os.path.dirname(abspath)
-    # os.chdir(dname)
-
-    # Specify format type here
-
-    options, arguments = getopt.getopt(sys.argv[1:] , "" ,
-        ["help","config-file=","scan=","image-path=", "text", "create-req", "delete-req","delete-entry=","delete-last-entry", "create-content"])
-
-    # Required
-    config_file_status = False
-    for option, argument in options:
-        if option == "--config-file":
-            if os.path.isfile(argument):
-                json_config = JsonConfig(argument)
-                sqlite_db = JotoSQLiteDB(json_config.sqlite_db_path)
-                images_manage = ImagesManage(json_config.image_size, json_config.original_image_dirpath, json_config.compressed_image_dirpath)
-                text_input = TextInput()
-                html = HTML("template.html", json_config.html_output_path, json_config.compressed_image_dirpath)
-                joto_obj = Joto(sqlite_db, images_manage, text_input, html)
-                config_file_status = True
-
-    if not config_file_status:
-        raise Exception("config file required") 
-
-    for option, argument in options:
-        if option == "--scan":
-            if os.path.exists(argument):
-                print("Scan: ", argument)
-                joto_obj.check_req()
-                joto_obj.scan_for_and_add_images_with_text(argument)
-                joto_obj.create_content()
-                joto_obj.write_content()
-        elif option == "--image-path":
-            if os.path.isfile(argument):
-                print("Adding image by path")
-                joto_obj.check_req()
-                joto_obj.add_image_from_path(argument)
-                joto_obj.create_content()
-                joto_obj.write_content()
-            else:
-                print("wrong path")
-        elif option == "--text":
-            joto_obj.check_req()
-            joto_obj.add_text_only()
-            joto_obj.create_content()
-            joto_obj.write_content()
-        elif option == "--create-content":
-            joto_obj.create_content()
-            joto_obj.write_content()
-        elif option == "--create-req":
-            joto_obj.create_req()
-            joto_obj.check_req()
-        elif option == "--delete-req":
-            joto_obj.delete_req()
-        elif option == "--delete-entry":
-            joto_obj.delete_entry(argument)
-        elif option == "--delete-last-entry":
-            joto_obj.delete_last_entry()
-        elif option == "--help":
-            print("Options:","--config-file","--scan","--image-path","--text","--create-content","--create-req","--delete-req","--delete-last-entry")
-
- 
-if __name__ == "__main__":
-   main(sys.argv[1:])
