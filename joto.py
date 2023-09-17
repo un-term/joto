@@ -58,7 +58,6 @@ class JotoSQLiteDB():
         return wrap
 
     def check_req(self):
-        print("TESTING" + self.db)
         if os.path.exists(self.db) and self._check_for_table():
             return True
         else:
@@ -391,14 +390,6 @@ class Joto():
         if not self.format.check_req(): raise Exception("format requirements are not met")
         print("Requirements met")
 
-        # if all([
-        #     self.sqlite_db.check_req(),
-        #     self.images_manage.check_req(),
-        #     self.format.check_req()
-        #     ]):
-        #     print("Requirements met!")
-        # else: raise Exception("Requiements are NOT met")
-
     def create_req(self):
         self.sqlite_db.create_req()
         self.images_manage.create_req()
@@ -430,9 +421,7 @@ class Joto():
         self.validate(date)
         if self.images_manage.check_filetype(image_path):
             image_filename = self.extract_filename(image_path)
-            text = text
-            compress_status = self.images_manage.compress_image(image_filename, image_path)
-            if compress_status:
+            if self.images_manage.compress_image(image_filename, image_path):
                 self.images_manage.archive_image_copy(image_filename, image_path)
                 # Add to db after compressing image - if compression fail, not added to db
                 self.sqlite_db.add_joto_data(date,text,image_filename)# db input order

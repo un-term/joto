@@ -45,6 +45,10 @@ class TestSQLiteDB(unittest.TestCase):
         joto_obj.create_req()
         joto_obj.check_req()
 
+        joto_obj.add_new_entry("2023-03-04", "This is a cow", "./test_data/2021-03-04_cow.jpg")
+        joto_obj.create_content()
+        joto_obj.write_content()
+
         # Scanning directory
         # joto_obj.scan_for_and_add_images_with_text(src_dir)
         # Test deleting - scan order dependent on filename - last fat_Sox
