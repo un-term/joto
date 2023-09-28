@@ -4,7 +4,6 @@ import sqlite3
 import datetime
 import os
 from subprocess import Popen, PIPE
-import sqlite3
 import shutil
 import sys
 import getopt
@@ -419,14 +418,22 @@ class Joto():
     
     def add_new_entry(self, date, text, image_path):
         self.validate(date)
-        if self.images_manage.check_filetype(image_path):
-            image_filename = self.extract_filename(image_path)
-            if self.images_manage.compress_image(image_filename, image_path):
-                self.images_manage.archive_image_copy(image_filename, image_path)
-                # Add to db after compressing image - if compression fail, not added to db
-                self.sqlite_db.add_joto_data(date,text,image_filename)# db input order
+
+        if not text:
+            text = "None"
+
+        if image_path:
+            if self.images_manage.check_filetype(image_path):
+                image_filename = self.extract_filename(image_path)
+                if self.images_manage.compress_image(image_filename, image_path):
+                    self.images_manage.archive_image_copy(image_filename, image_path)
+                    # Add to db after compressing image - if compression fail, not added to db
+            else:
+                print("Wrong path: ", image_path)
         else:
-            print("Wrong path: ", image_path)
+            image_path = "None"
+
+        self.sqlite_db.add_joto_data(date,text,image_filename)# db input order
         
     def delete_last_entry(self):
         image = self.sqlite_db.delete_last_row()
