@@ -30,6 +30,8 @@ class TestSQLiteDB(unittest.TestCase):
         html_template = "template.html"
         size = "1000x1000"
 
+        if not os.path.exists("test_workspace"):
+            os.makedirs("test_workspace")        
         # load config and setup objects
         if os.path.isfile("test_config.json"):
             json_config = joto.JsonConfig("test_config.json")
@@ -46,6 +48,14 @@ class TestSQLiteDB(unittest.TestCase):
         joto_obj.check_req()
 
         joto_obj.add_new_entry("2023-03-04", "This is a cow", "./test_data/2021-03-04_cow.jpg")
+        joto_obj.create_content()
+        joto_obj.write_content()
+
+        joto_obj.add_new_entry("2023-05-26", "Giraffing around", "./test_data/2020-11-10_giraffe.jpg")
+        joto_obj.create_content()
+        joto_obj.write_content()
+
+        joto_obj.add_new_entry("2023-07-26", "no image", "")
         joto_obj.create_content()
         joto_obj.write_content()
 
