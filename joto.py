@@ -423,6 +423,31 @@ class Joto():
         return os.path.basename(filename)
     
     def add_new_entry(self, date, text, image_path):
+        count = 0
+        # Checks should not raise exceptions otherwise a wrong entry will exit the software
+        # Instead log the issue
+        if self.check_date_format(date): 
+            count += 1
+        if self.check_empty_text(text):
+            text = self.set_empty_text(text)
+            count += 1
+            
+        if self.check_image(image_path):
+            self.compress_and_archive_image(image_path)
+            count += 1
+
+        if count == 3:
+            self.sqlite_db.add_joto_data(date,text,image_filename)# db input order
+            self.logEntry("New entry added: date,image,filename")
+            return True # Return statements used for testing, test false statement to check checks pickup errors
+
+        else:
+            print("ENTRY ERROR: Requirements not met for adding new entry - skipping")
+            self.logEntry("ENTRY ERROR: Requirements not met for adding new entry - skipping")
+            return False
+        
+
+        
         self.validate(date)
 
         if not text:
