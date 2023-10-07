@@ -42,16 +42,15 @@ class JotoSQLiteDB():
             output = None
             try:
                 self.connection = sqlite3.connect(self.db)
-                print("Successfully connected to: ", self.db)
+                print("DB: Connected to: ", self.db)
 
                 output = func(self, *args, **kwargs)
 
             except sqlite3.Error as error:
-                print("Error while working with SQLite", error)
+                print("ERROR: DB connection", error)
             finally:
                 if self.connection:
                     self.connection.close()
-                print("Sqlite connection is closed")
             return output
 
         return wrap
@@ -72,6 +71,7 @@ class JotoSQLiteDB():
 
     @connect
     def _check_for_table(self):
+        print("DB: Check table exists")
         cursor = self.connection.cursor()
         sqlite_query = ''' SELECT count(name) FROM sqlite_master WHERE type='table' AND name='joto'; '''
         cursor.execute(sqlite_query)
@@ -84,6 +84,7 @@ class JotoSQLiteDB():
 
     @connect
     def _create_db_table(self):
+        print("DB: Create db table")
         cursor = self.connection.cursor()
         sqlite_create_table_query = '''CREATE TABLE joto (
                                 id    INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -95,10 +96,13 @@ class JotoSQLiteDB():
         cursor.execute(sqlite_create_table_query)
         self.connection.commit()
         cursor.close()
-        print("SQLite table 'joto' created")
 
     @connect
     def add_joto_data(self, date, text, image):
+        print("DB: Add data:")
+        print("    date: ", date)
+        print("    text: ", text)
+        print("    image: ", image)
         cursor = self.connection.cursor()
 
         sqlite_insert_with_param = '''INSERT INTO joto
@@ -112,6 +116,7 @@ class JotoSQLiteDB():
 
     @connect
     def retrieve_all_data_ordered_by_date(self):
+        print("DB: Get data ordered by date")
         cursor = self.connection.cursor()
 
         sqlite_select_query = '''SELECT * from joto
@@ -127,7 +132,8 @@ class JotoSQLiteDB():
 
     @connect
     def delete_last_row(self):
-        '''Deletes last added row, not oldest'''
+        '''Delete last row added, not oldest'''
+        print("DB: Delete last row added")
         cursor = self.connection.cursor()
 
         # Get last image filename for deleting
@@ -149,6 +155,7 @@ class JotoSQLiteDB():
     @connect
     def delete_row(self, id):
         '''Delete row with id'''
+        print("DB: Delete row :", id)
         cursor = self.connection.cursor()
 
         sql_query = """select * from joto where id = ?"""
@@ -192,12 +199,14 @@ class ImagesManage():
         if os.path.exists(self.achv_dir): shutil.rmtree(self.achv_dir)
 
     def delete(self, image):
+        print("IM: Delete image :", image)
         if not image == "None":
             print("Delete image: ", image)
             os.remove(self.dst_dir + image)
             os.remove(self.achv_dir + image)
 
     def compress_image(self, image_filename, image_path):
+        print("IM: Compress image :", image_filename)
         src_filepath = image_path
         dst_filepath = self.dst_dir + image_filename
         achv_filepath = self.achv_dir + image_filename
@@ -215,6 +224,7 @@ class ImagesManage():
         shutil.move(src_filepath, achv_filepath)
 
     def archive_image_copy(self, image_filename, image_path):
+        print("IM: Archive original image:", image_filename)
         src_filepath = image_path
         achv_filepath = self.achv_dir + image_filename
         shutil.copyfile(src_filepath, achv_filepath)
@@ -274,6 +284,7 @@ class HTML():
         pass
 
     def create_content(self, db_data):
+        print("HTML: Create html")
         shutil.copyfile(self.template_file,self.output_html_file)
         date = None
         text_list = []
@@ -382,24 +393,19 @@ class Joto():
 
     def check_req(self):
         '''Not to be used as part of other functions - manual intervention required'''
-        print("")
-        print("Checking requirements")
         if not self.sqlite_db.check_req(): raise Exception("sqlite requirements are not met")
         if not self.images_manage.check_req(): raise Exception("images_manage requirements are not met")
         if not self.format.check_req(): raise Exception("format requirements are not met")
-        print("Requirements met")
 
     def create_req(self):
         self.sqlite_db.create_req()
         self.images_manage.create_req()
         self.format.create_req()
-        print("db,table and paths created")
 
     def delete_req(self):
         self.sqlite_db.delete_req()
         self.images_manage.delete_req()
         self.format.delete_req()
-        print("db and paths deleted")
 
     def validate(self, date_text):
         try:
