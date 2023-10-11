@@ -113,6 +113,7 @@ class JotoSQLiteDB():
         cursor.execute(sqlite_insert_with_param, data_tuple)
         self.connection.commit()
         cursor.close()
+        return True
 
     @connect
     def retrieve_all_data_ordered_by_date(self):
@@ -270,6 +271,8 @@ class ImagesManage():
         for ext in self.file_types:
             if name.endswith(ext):
                 return True
+        print("IM ERROR: Incorrect image filetype")
+        return False
 
 class TextInput():
 
