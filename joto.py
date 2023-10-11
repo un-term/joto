@@ -422,11 +422,15 @@ class Joto():
         self.images_manage.delete_req()
         self.format.delete_req()
 
-    def validate(self, date_text):
-        try:
+    def check_date_format(self, date_text):
+        try: 
             datetime.datetime.strptime(date_text, '%Y-%m-%d')
-        except ValueError:
-            raise ValueError("Incorrect data format, should be YYYY-MM-DD")
+            return True
+        # except ValueError:
+        #     raise ValueError("Incorrect data format, should be YYYY-MM-DD")
+        except:
+            print("Incorrect data format, should be YYYY-MM-DD")
+            return False
 
     def extract_attributes(self, file):
         title = os.path.splitext(file)[0]
