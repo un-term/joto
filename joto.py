@@ -125,6 +125,18 @@ class JotoSQLiteDB():
         db_data = cursor.fetchall()
         cursor.close()
         return db_data
+    
+    @connect
+    def get_last_row(self):
+        '''Get last row added, not oldest'''
+        print("DB: get last row added")
+        cursor = self.connection.cursor()
+
+        # Get last image filename for deleting
+        sql_query = """select * from joto where id = (SELECT MAX(id) FROM joto);"""
+        cursor.execute(sql_query)
+        lastrow = cursor.fetchall()
+        return lastrow[0]   
 
     def check_images_integrity(self):
         '''Check that images listed in db are also in images/compressed'''
