@@ -442,48 +442,30 @@ class Joto():
         return os.path.basename(filename)
     
     def add_new_entry(self, date, text, image_path):
-        count = 0
-        # Checks should not raise exceptions otherwise a wrong entry will exit the software
-        # Instead log the issue
-        if self.check_date_format(date): 
-            count += 1
-        if self.check_empty_text(text):
-            text = self.set_empty_text(text)
-            count += 1
-            
-        if self.check_image(image_path):
-            self.compress_and_archive_image(image_path)
-            count += 1
-
-        if count == 3:
-            self.sqlite_db.add_joto_data(date,text,image_filename)# db input order
-            self.logEntry("New entry added: date,image,filename")
-            return True # Return statements used for testing, test false statement to check checks pickup errors
-
-        else:
-            print("ENTRY ERROR: Requirements not met for adding new entry - skipping")
-            self.logEntry("ENTRY ERROR: Requirements not met for adding new entry - skipping")
+        if not self.check_date_format(date): 
             return False
-        
-
-        
-        self.validate(date)
 
         if not text:
-            text = "None"
-
+            text = ""
+            
         if image_path:
             if self.images_manage.check_filetype(image_path):
                 image_filename = self.extract_filename(image_path)
                 if self.images_manage.compress_image(image_filename, image_path):
                     self.images_manage.archive_image_copy(image_filename, image_path)
                     # Add to db after compressing image - if compression fail, not added to db
+                else:
+                    return False
             else:
-                print("Wrong path: ", image_path)
+                return False
         else:
-            image_path = "None"
+            image_filename = "None"
 
-        self.sqlite_db.add_joto_data(date,text,image_filename)# db input order
+
+        if self.sqlite_db.add_joto_data(date,text,image_filename): # db input order
+            return True # Return statements used for testing, test false statement to check checks pickup errors
+        else: 
+            return False
         
     def delete_last_entry(self):
         image = self.sqlite_db.delete_last_row()
