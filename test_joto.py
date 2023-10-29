@@ -1,11 +1,5 @@
 #!/usr/bin/env python
 
-import datetime
-import subprocess
-from pathlib import Path
-import sqlite3
-import shutil
-
 import unittest
 from unittest.mock import Mock
 
