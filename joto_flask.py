@@ -44,6 +44,8 @@ def upload_file():
             # return redirect(url_for('download_file', name=filename))
 
         joto_obj.add_new_entry(date, comment, 'test_workspace/upload/'+filename)
+        joto_obj.create_content()
+        joto_obj.write_content()
 
     elif request.method == 'GET':
         pass
