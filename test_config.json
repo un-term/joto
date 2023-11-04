@@ -1,5 +1,6 @@
 {
     "sqlite_db_path": "test_workspace/test.db",
+    "upload_image_dirpath": "test_workspace/images/upload",
     "original_image_dirpath": "test_workspace/images/original/",
     "compressed_image_dirpath": "test_workspace/images/compressed/",
     "image_size": "1000x1000",

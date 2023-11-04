@@ -187,15 +187,20 @@ class JotoSQLiteDB():
 
 
 class ImagesManage():
-    def __init__(self,size, dst_dir, achv_dir):
+    def __init__(self,size,upld_dir, dst_dir, achv_dir):
         self.size = size  # compression size
+        self.upld_dir = upld_dir
         self.dst_dir = dst_dir
         self.achv_dir = achv_dir
         self.file_types = ["jpg","JPG","jpeg","JPEG","png","PNG"]
         self.target_size = 20  # %
 
+    def get_upld_dir(self):
+        return self.upld_dir
+
     def check_req(self):
-        count = 2
+        count = 3
+        if os.path.exists(self.upld_dir): count -= 1
         if os.path.exists(self.dst_dir): count -= 1
         if os.path.exists(self.achv_dir): count -= 1
         if count == 0:
@@ -204,10 +209,12 @@ class ImagesManage():
             return False
 
     def create_req(self):
+        os.makedirs(self.upld_dir)
         os.makedirs(self.dst_dir)
         os.makedirs(self.achv_dir)
 
     def delete_req(self):
+        if os.path.exists(self.upld_dir): shutil.rmtree(self.upld_dir)
         if os.path.exists(self.dst_dir): shutil.rmtree(self.dst_dir)
         if os.path.exists(self.achv_dir): shutil.rmtree(self.achv_dir)
 

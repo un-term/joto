@@ -15,7 +15,7 @@ else:
     exit() 
 
 sqlite_db = joto.JotoSQLiteDB(json_config.sqlite_db_path)
-images_manage = joto.ImagesManage(json_config.image_size, json_config.original_image_dirpath, json_config.compressed_image_dirpath)
+images_manage = joto.ImagesManage(json_config.image_size, json_config.upload_image_dirpath, json_config.original_image_dirpath, json_config.compressed_image_dirpath)
 html = joto.HTML("./templates/output.html", json_config.html_output_path, json_config.compressed_image_dirpath)
 joto_obj = joto.Joto(sqlite_db, images_manage, html)
 
@@ -25,9 +25,8 @@ joto_obj.check_req()
 
 # Flask
 # ------------------------------------------------------------------------------
-UPLOAD_FOLDER = 'test_workspace/upload'
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['UPLOAD_FOLDER'] = joto_obj.images_manage.get_upld_dir()
 @app.route("/", methods=['GET', 'POST'])
 def upload_file():
 # def index():
