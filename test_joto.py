@@ -49,7 +49,7 @@ class TestSQLiteDB(unittest.TestCase):
         joto_obj.check_req()
         joto_obj.copy_test_data()
 
-        joto_obj.add_new_entry("2021-03-04", "This is a cow", "./test_data/2021-03-04_cow.jpg")
+        joto_obj.add_new_entry("2021-03-04", "This is a cow", "2021-03-04_cow.jpg")
         joto_obj.create_content()
         joto_obj.write_content()
 
@@ -62,7 +62,6 @@ class TestSQLiteDB(unittest.TestCase):
             count += 1
             
         self.assertEqual(3, count)
-
 
     def test_add_new_entry2(self):
         print("\n")
@@ -79,7 +78,7 @@ class TestSQLiteDB(unittest.TestCase):
 
         count = 0
         # Check entry create successfully
-        if joto_obj.add_new_entry("2021-01-02", "", "./test_data/2021-01-02_fox.jpg"):
+        if joto_obj.add_new_entry("2021-01-02", "", "2021-01-02_fox.jpg"):
             count += 1
 
         # Check db contains correct data

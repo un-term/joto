@@ -458,18 +458,18 @@ class Joto():
     def extract_filename(self, filename):
         return os.path.basename(filename)
     
-    def add_new_entry(self, date, text, image_path):
+    def add_new_entry(self, date, text, image_filename):
         if not self.check_date_format(date): 
             return False
 
         if not text:
             text = ""
             
-        if image_path:
-            if self.images_manage.check_filetype(image_path):
-                image_filename = self.extract_filename(image_path)
+        if image_filename:
+            if self.images_manage.check_filetype(image_filename):
+                image_path = self.images_manage.get_upld_dir() + image_filename
                 if self.images_manage.compress_image(image_filename, image_path):
-                    self.images_manage.archive_image_copy(image_filename, image_path)
+                    self.images_manage.archive_image_move(image_filename, image_path)
                     # Add to db after compressing image - if compression fail, not added to db
                 else:
                     return False
