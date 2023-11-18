@@ -1,8 +1,9 @@
 {
-    "sqlite_db_path": "test_workspace/test.db",
-    "upload_image_dirpath": "test_workspace/images/upload",
-    "original_image_dirpath": "test_workspace/images/original/",
-    "compressed_image_dirpath": "test_workspace/images/compressed/",
+    "data_dir": "test_data_dir/",
+    "sqlite_db_path": "test.db",
+    "upload_image_dirpath": "images/upload/",
+    "original_image_dirpath": "images/original/",
+    "compressed_image_dirpath": "images/compressed/",
     "image_size": "1000x1000",
-    "html_output_path": "test_workspace/joto.html"
+    "html_output_path": "joto.html"
 }

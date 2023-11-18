@@ -287,10 +287,11 @@ class TextInput():
         return input("Text: ")
 
 class HTML():
-    def __init__(self, template_file, output_html_file, image_dir):
+    def __init__(self, template_file, output_html_file, image_dir, data_dir):
         self.template_file = template_file
         self.output_html_file = output_html_file
         self.image_dir = image_dir
+        self.data_dir = data_dir
         self.content = []
 
     def create_req(self):
@@ -390,6 +391,7 @@ class HTML():
 class JsonConfig():
     def __init__(self, config_path):
         self.config_path = config_path
+        self.data_dir = None
         self.sqlite_db_path = None
         self.upload_image_dirpath = None
         self.original_image_dirpath = None
@@ -401,6 +403,7 @@ class JsonConfig():
     def set_config_values(self):
         with open(self.config_path, "r") as read_file:
             data = json.load(read_file)
+            self.data_dir = data["data_dir"]
             self.sqlite_db_path = data["sqlite_db_path"]
             self.upload_image_dirpath = data["upload_image_dirpath"]
             self.original_image_dirpath = data["original_image_dirpath"]
