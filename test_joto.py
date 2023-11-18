@@ -47,6 +47,7 @@ class TestSQLiteDB(unittest.TestCase):
         joto_obj.delete_req()
         joto_obj.create_req()
         joto_obj.check_req()
+        joto_obj.copy_test_data()
 
         joto_obj.add_new_entry("2021-03-04", "This is a cow", "./test_data/2021-03-04_cow.jpg")
         joto_obj.create_content()
@@ -74,6 +75,7 @@ class TestSQLiteDB(unittest.TestCase):
         joto_obj.delete_req()
         joto_obj.create_req()
         joto_obj.check_req()
+        joto_obj.copy_test_data()
 
         count = 0
         # Check entry create successfully
@@ -103,6 +105,7 @@ class TestSQLiteDB(unittest.TestCase):
         joto_obj.delete_req()
         joto_obj.create_req()
         joto_obj.check_req()
+        joto_obj.copy_test_data()
 
         count = 0
         # Check entry create successfully
@@ -132,6 +135,7 @@ class TestSQLiteDB(unittest.TestCase):
         joto_obj.delete_req()
         joto_obj.create_req()
         joto_obj.check_req()
+        joto_obj.copy_test_data()
 
         count = 0
         # Check entry create successfully

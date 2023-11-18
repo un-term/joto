@@ -431,6 +431,14 @@ class Joto():
         self.images_manage.delete_req()
         self.format.delete_req()
 
+    def copy_test_data(self):
+        # Copy test_data images into upload folder
+        for file_name in os.listdir('test_data/'):
+            source = 'test_data/' + file_name
+            destination = self.images_manage.get_upld_dir() + file_name
+            if os.path.isfile(source):
+                shutil.copy(source, destination)
+
     def check_date_format(self, date_text):
         try: 
             datetime.datetime.strptime(date_text, '%Y-%m-%d')
