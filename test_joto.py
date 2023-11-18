@@ -3,7 +3,7 @@
 import unittest
 from unittest.mock import Mock
 
-import os,sys,inspect
+import os,sys,inspect,shutil
 current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parent_dir = os.path.dirname(current_dir)
 sys.path.insert(0, parent_dir) 
@@ -17,21 +17,20 @@ def check_string(file_path, stringFind):
         else:
             return False
 
+def del_workspace(json_config_obj):
+    shutil.rmtree(os.path.dirname(json_config_obj.data_dir))
 
-# Setup
+# Load config and setup objects
 # ------------------------------------------------------------------------------
-if not os.path.exists("test_workspace"):
-    os.makedirs("test_workspace")        
-# load config and setup objects
 if os.path.isfile("test_config.json"):
     json_config = joto.JsonConfig("test_config.json")
 else:
     print("Missing config file")
     exit() 
 
-sqlite_db = joto.JotoSQLiteDB(json_config.sqlite_db_path)
-images_manage = joto.ImagesManage(json_config.image_size, json_config.upload_image_dirpath, json_config.original_image_dirpath, json_config.compressed_image_dirpath)
-html = joto.HTML("./templates/output.html", json_config.html_output_path, json_config.compressed_image_dirpath)
+def del_workspace():
+    shutil.rmtree(os.path.dirname(json_config.data_dir))
+
 joto_obj = joto.Joto(sqlite_db, images_manage, html)
 
 # ------------------------------------------------------------------------------
@@ -141,6 +140,7 @@ class TestSQLiteDB(unittest.TestCase):
         if not joto_obj.add_new_entry("2022-0302", "An interesting day", ""):
             count += 1
         # Also check if there is a database entry
+        del_workspace(json_config)
         self.assertEqual(1, count)
        
 
