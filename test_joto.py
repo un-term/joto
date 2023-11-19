@@ -57,11 +57,11 @@ class TestSQLiteDB(unittest.TestCase):
         joto_obj.write_content()
 
         count = 0
-        if check_string("test_workspace/joto.html",'<h1>2021-03-04</h1>'):
+        if check_string("test_data_dir/joto.html",'<h1>2021-03-04</h1>'):
             count += 1
-        if check_string("test_workspace/joto.html",'<img src="test_workspace/images/compressed/2021-03-04_cow.jpg">'):
+        if check_string("test_data_dir/joto.html",'<img src="test_data_dir/images/compressed/2021-03-04_cow.jpg">'):
             count += 1
-        if check_string("test_workspace/joto.html",'<p>This is a cow</p>'):
+        if check_string("test_data_dir/joto.html",'<p>This is a cow</p>'):
             count += 1
             
         self.assertEqual(3, count)
