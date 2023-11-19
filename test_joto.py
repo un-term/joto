@@ -53,7 +53,7 @@ class TestSQLiteDB(unittest.TestCase):
         count = 0
         if check_string("test_data_dir/joto.html",'<h1>2021-03-04</h1>'):
             count += 1
-        if check_string("test_data_dir/joto.html",'<img src="test_data_dir/images/compressed/2021-03-04_cow.jpg">'):
+        if check_string("test_data_dir/joto.html",'<img src="images/compressed/2021-03-04_cow.jpg">'):
             count += 1
         if check_string("test_data_dir/joto.html",'<p>This is a cow</p>'):
             count += 1

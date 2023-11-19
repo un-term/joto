@@ -292,6 +292,7 @@ class HTML():
         self.output_html_file = json_config.html_output_path
         self.image_dir = json_config.compressed_image_dirpath
         self.data_dir = json_config.data_dir
+        self.html_relative_image_dir = self.image_dir.replace(self.data_dir, '')
         self.content = []
 
     def create_req(self):
@@ -305,7 +306,7 @@ class HTML():
 
     def delete_req(self):
         pass
-
+       
     def create_content(self, db_data):
         print("HTML: Create html")
         shutil.copyfile(self.template_file,self.output_html_file)
@@ -353,7 +354,7 @@ class HTML():
         )
 
     def snpt_image(self, image):
-        image_filepath = '"' + self.image_dir + image + '"'
+        image_filepath = '"' + self.html_relative_image_dir + image + '"'
         self.content.append(
            self._add_image(image_filepath)
         )
