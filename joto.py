@@ -412,19 +412,27 @@ class JsonConfig():
             self.html_output_path = data["html_output_path"]
             
 class Joto():
-    def __init__(self, sqlite_db, images_manage, format):
-
+    def __init__(self, json_config, sqlite_db, images_manage, format):
+        self.json_config = json_config
         self.sqlite_db = sqlite_db
         self.images_manage = images_manage
         self.format = format
 
+    def _create_data_dir(self):
+        os.mkdir(self.json_config.data_dir)
+
+    def _check_data_dir(self):
+        return os.path.isdir(self.json_config.data_dir)
+
     def check_req(self):
         '''Not to be used as part of other functions - manual intervention required'''
+        if not self._check_data_dir(): raise Exception("data_dir does not exist") 
         if not self.sqlite_db.check_req(): raise Exception("sqlite requirements are not met")
         if not self.images_manage.check_req(): raise Exception("images_manage requirements are not met")
         if not self.format.check_req(): raise Exception("format requirements are not met")
 
     def create_req(self):
+        self._create_data_dir()
         self.sqlite_db.create_req()
         self.images_manage.create_req()
         self.format.create_req()
