@@ -421,6 +421,10 @@ class Joto():
     def _create_data_dir(self):
         os.mkdir(self.json_config.data_dir)
 
+    def _delete_data_dir(self):
+        if os.path.isdir(os.path.dirname(self.json_config.data_dir)):
+            shutil.rmtree(os.path.dirname(self.json_config.data_dir))
+
     def _check_data_dir(self):
         return os.path.isdir(self.json_config.data_dir)
 
@@ -438,9 +442,7 @@ class Joto():
         self.format.create_req()
 
     def delete_req(self):
-        self.sqlite_db.delete_req()
-        self.images_manage.delete_req()
-        self.format.delete_req()
+        self._delete_data_dir()
 
     def copy_test_data(self):
         # Copy test_data images into upload folder

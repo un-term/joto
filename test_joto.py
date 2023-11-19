@@ -17,11 +17,9 @@ def check_string(file_path, stringFind):
         else:
             return False
 
-def del_workspace(json_config_obj):
-    shutil.rmtree(os.path.dirname(json_config_obj.data_dir))
-
 # Load config and setup objects
 # ------------------------------------------------------------------------------
+
 if os.path.isfile("test_config.json"):
     json_config = joto.JsonConfig("test_config.json")
 else:
@@ -146,7 +144,6 @@ class TestSQLiteDB(unittest.TestCase):
         if not joto_obj.add_new_entry("2022-0302", "An interesting day", ""):
             count += 1
         # Also check if there is a database entry
-        del_workspace(json_config)
         self.assertEqual(1, count)
        
 
