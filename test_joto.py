@@ -26,15 +26,9 @@ else:
     print("Missing config file")
     exit() 
 
-sqlite_db_path = json_config.data_dir + json_config.sqlite_db_path
-upload_image_dirpath = json_config.data_dir + json_config.upload_image_dirpath
-original_image_dirpath = json_config.data_dir + json_config.original_image_dirpath
-compressed_image_dirpath = json_config.data_dir + json_config.compressed_image_dirpath
-html_output_path = json_config.data_dir + json_config.html_output_path
-
-sqlite_db = joto.JotoSQLiteDB(sqlite_db_path)
-images_manage = joto.ImagesManage(json_config.image_size, upload_image_dirpath, original_image_dirpath, compressed_image_dirpath)
-html = joto.HTML("./templates/output.html", html_output_path, compressed_image_dirpath, json_config.data_dir)
+sqlite_db = joto.JotoSQLiteDB(json_config)
+images_manage = joto.ImagesManage(json_config)
+html = joto.HTML("./templates/output.html", json_config)
 joto_obj = joto.Joto(json_config, sqlite_db, images_manage, html)
 
 # ------------------------------------------------------------------------------

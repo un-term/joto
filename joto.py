@@ -32,8 +32,8 @@ def append_multiple_lines_to_file(file_name, lines_to_append):
 
 class JotoSQLiteDB():
     '''Performs fixed sql operations on joto table'''
-    def __init__(self, db_path):
-        self.db = db_path
+    def __init__(self, json_config):
+        self.db = json_config.sqlite_db_path
         self.connection = None
 
     def connect(func):
@@ -187,11 +187,11 @@ class JotoSQLiteDB():
 
 
 class ImagesManage():
-    def __init__(self,size,upld_dir, dst_dir, achv_dir):
-        self.size = size  # compression size
-        self.upld_dir = upld_dir
-        self.dst_dir = dst_dir
-        self.achv_dir = achv_dir
+    def __init__(self, json_config):
+        self.size = json_config.image_size  # compression size
+        self.upld_dir = json_config.upload_image_dirpath
+        self.dst_dir = json_config.compressed_image_dirpath
+        self.achv_dir = json_config.original_image_dirpath
         self.file_types = ["jpg","JPG","jpeg","JPEG","png","PNG"]
         self.target_size = 20  # %
 
@@ -287,11 +287,11 @@ class TextInput():
         return input("Text: ")
 
 class HTML():
-    def __init__(self, template_file, output_html_file, image_dir, data_dir):
+    def __init__(self, template_file, json_config):
         self.template_file = template_file
-        self.output_html_file = output_html_file
-        self.image_dir = image_dir
-        self.data_dir = data_dir
+        self.output_html_file = json_config.html_output_path
+        self.image_dir = json_config.compressed_image_dirpath
+        self.data_dir = json_config.data_dir
         self.content = []
 
     def create_req(self):
@@ -398,18 +398,19 @@ class JsonConfig():
         self.compressed_image_dirpath = None
         self.image_size = None
         self.html_output_path = None
+        
         self.set_config_values()
 
     def set_config_values(self):
         with open(self.config_path, "r") as read_file:
             data = json.load(read_file)
             self.data_dir = data["data_dir"]
-            self.sqlite_db_path = data["sqlite_db_path"]
-            self.upload_image_dirpath = data["upload_image_dirpath"]
-            self.original_image_dirpath = data["original_image_dirpath"]
-            self.compressed_image_dirpath = data["compressed_image_dirpath"]
+            self.sqlite_db_path = os.path.join(data["data_dir"],data["sqlite_db_path"])
+            self.upload_image_dirpath = os.path.join(data["data_dir"],data["upload_image_dirpath"])
+            self.original_image_dirpath = os.path.join(data["data_dir"],data["original_image_dirpath"])
+            self.compressed_image_dirpath = os.path.join(data["data_dir"],data["compressed_image_dirpath"])
             self.image_size = data["image_size"]
-            self.html_output_path = data["html_output_path"]
+            self.html_output_path = os.path.join(data["data_dir"],data["html_output_path"])
             
 class Joto():
     def __init__(self, json_config, sqlite_db, images_manage, format):
