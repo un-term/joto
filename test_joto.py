@@ -58,6 +58,7 @@ class TestSQLiteDB(unittest.TestCase):
         if check_string("test_data_dir/joto.html",'<p>This is a cow</p>'):
             count += 1
             
+        joto_obj.delete_req()
         self.assertEqual(3, count)
 
     def test_add_new_entry2(self):
@@ -88,6 +89,7 @@ class TestSQLiteDB(unittest.TestCase):
         if last_db_row[3] == "2021-01-02_fox.jpg":
             count += 1
           
+        joto_obj.delete_req()
         self.assertEqual(4, count)
 
     def test_add_new_entry3(self):
@@ -117,7 +119,7 @@ class TestSQLiteDB(unittest.TestCase):
             count += 1
         if last_db_row[3] == "None":
             count += 1
-          
+        joto_obj.delete_req()
         self.assertEqual(4, count)
 
     def test_add_new_entry4(self):
@@ -138,6 +140,7 @@ class TestSQLiteDB(unittest.TestCase):
         if not joto_obj.add_new_entry("2022-0302", "An interesting day", ""):
             count += 1
         # Also check if there is a database entry
+        joto_obj.delete_req()
         self.assertEqual(1, count)
        
 
