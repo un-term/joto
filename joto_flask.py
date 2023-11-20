@@ -14,10 +14,10 @@ else:
     print("Missing config file")
     exit() 
 
-sqlite_db = joto.JotoSQLiteDB(json_config.sqlite_db_path)
-images_manage = joto.ImagesManage(json_config.image_size, json_config.upload_image_dirpath, json_config.original_image_dirpath, json_config.compressed_image_dirpath)
-html = joto.HTML("./templates/output.html", json_config.html_output_path, json_config.compressed_image_dirpath)
-joto_obj = joto.Joto(sqlite_db, images_manage, html)
+sqlite_db = joto.JotoSQLiteDB(json_config)
+images_manage = joto.ImagesManage(json_config)
+html = joto.HTML("./templates/output.html", json_config)
+joto_obj = joto.Joto(json_config, sqlite_db, images_manage, html)
 
 joto_obj.delete_req()
 joto_obj.create_req()
