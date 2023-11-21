@@ -143,6 +143,51 @@ class TestSQLiteDB(unittest.TestCase):
         joto_obj.delete_req()
         self.assertEqual(1, count)
        
+    def test_add_new_entry5(self):
+        print("\n")
+        print("------------------------------------------")
+        print("TEST 5")
+        print("DB test multiple entries")
+        print("------------------------------------------")
+
+        joto_obj.delete_req()
+        joto_obj.create_req()
+        joto_obj.check_req()
+        joto_obj.copy_test_data()
+
+        count = 0
+        # Entry 1
+        if joto_obj.add_new_entry("2021-01-02", "This is fox", "2021-01-02_fox.jpg"):
+            count += 1
+
+        # Check db contains correct data
+        last_db_row = sqlite_db.get_last_row()
+        print("Last db row: ", last_db_row)
+        if last_db_row[1] == "2021-01-02":
+            count += 1
+        if last_db_row[2] == "This is fox":
+            count += 1
+        if last_db_row[3] == "2021-01-02_fox.jpg":
+            count += 1
+
+        # Entry 2
+        if joto_obj.add_new_entry("2021-04-21", "Parrots!", "2021-04-21_parrots.jpg"):
+            count += 1
+            
+        last_db_row = sqlite_db.get_last_row()
+        print("Last db row: ", last_db_row)
+        if last_db_row[1] == "2021-04-21":
+            count += 1
+        if last_db_row[2] == "Parrots!":
+            count += 1
+        if last_db_row[3] == "2021-04-21_parrots.jpg":
+            count += 1
+          
+        joto_obj.create_content()
+        joto_obj.write_content()
+        # joto_obj.delete_req()
+        self.assertEqual(8, count)
+
 
     #tests
     # 5 missing image file
