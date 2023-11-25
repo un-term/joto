@@ -26,11 +26,6 @@ else:
     print("Missing config file")
     exit() 
 
-sqlite_db = joto.JotoSQLiteDB(json_config)
-images_manage = joto.ImagesManage(json_config)
-html = joto.HTML("./templates/output.html", json_config)
-joto_obj = joto.Joto(json_config, sqlite_db, images_manage, html)
-
 # ------------------------------------------------------------------------------
 class TestSQLiteDB(unittest.TestCase):
 
@@ -40,10 +35,12 @@ class TestSQLiteDB(unittest.TestCase):
         print("HTML Test")
         print("Add new entry:date, image, text")
         print("------------------------------------------")
+        sqlite_db = joto.JotoSQLiteDB(json_config)
+        images_manage = joto.ImagesManage(json_config)
+        html = joto.HTML("./templates/output.html", json_config)
+        joto_obj = joto.Joto(json_config, sqlite_db, images_manage, html)
 
-        joto_obj.delete_req()
-        joto_obj.create_req()
-        joto_obj.check_req()
+        joto_obj.delete_req(); joto_obj.create_req(); joto_obj.check_req()
         joto_obj.copy_test_data()
 
         joto_obj.add_new_entry("2021-03-04", "This is a cow", "2021-03-04_cow.jpg")
@@ -69,9 +66,12 @@ class TestSQLiteDB(unittest.TestCase):
         print("No text, only image")
         print("------------------------------------------")
 
-        joto_obj.delete_req()
-        joto_obj.create_req()
-        joto_obj.check_req()
+        sqlite_db = joto.JotoSQLiteDB(json_config)
+        images_manage = joto.ImagesManage(json_config)
+        html = joto.HTML("./templates/output.html", json_config)
+        joto_obj = joto.Joto(json_config, sqlite_db, images_manage, html)
+
+        joto_obj.delete_req(); joto_obj.create_req(); joto_obj.check_req()
         joto_obj.copy_test_data()
 
         count = 0
@@ -100,9 +100,12 @@ class TestSQLiteDB(unittest.TestCase):
         print("No image, text only")
         print("------------------------------------------")
 
-        joto_obj.delete_req()
-        joto_obj.create_req()
-        joto_obj.check_req()
+        sqlite_db = joto.JotoSQLiteDB(json_config)
+        images_manage = joto.ImagesManage(json_config)
+        html = joto.HTML("./templates/output.html", json_config)
+        joto_obj = joto.Joto(json_config, sqlite_db, images_manage, html)
+
+        joto_obj.delete_req(); joto_obj.create_req(); joto_obj.check_req()
         joto_obj.copy_test_data()
 
         count = 0
@@ -130,9 +133,12 @@ class TestSQLiteDB(unittest.TestCase):
         print("Wrong date format")
         print("------------------------------------------")
 
-        joto_obj.delete_req()
-        joto_obj.create_req()
-        joto_obj.check_req()
+        sqlite_db = joto.JotoSQLiteDB(json_config)
+        images_manage = joto.ImagesManage(json_config)
+        html = joto.HTML("./templates/output.html", json_config)
+        joto_obj = joto.Joto(json_config, sqlite_db, images_manage, html)
+
+        joto_obj.delete_req(); joto_obj.create_req(); joto_obj.check_req()
         joto_obj.copy_test_data()
 
         count = 0
@@ -150,9 +156,12 @@ class TestSQLiteDB(unittest.TestCase):
         print("DB test multiple entries")
         print("------------------------------------------")
 
-        joto_obj.delete_req()
-        joto_obj.create_req()
-        joto_obj.check_req()
+        sqlite_db = joto.JotoSQLiteDB(json_config)
+        images_manage = joto.ImagesManage(json_config)
+        html = joto.HTML("./templates/output.html", json_config)
+        joto_obj = joto.Joto(json_config, sqlite_db, images_manage, html)
+
+        joto_obj.delete_req(); joto_obj.create_req(); joto_obj.check_req()
         joto_obj.copy_test_data()
 
         count = 0
@@ -185,7 +194,7 @@ class TestSQLiteDB(unittest.TestCase):
           
         joto_obj.create_content()
         joto_obj.write_content()
-        # joto_obj.delete_req()
+        joto_obj.delete_req()
         self.assertEqual(8, count)
 
 
