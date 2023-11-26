@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, abort, redirect, url_for
 from werkzeug.utils import secure_filename
 import os,sys,inspect
 import joto
+from datetime import datetime
 
 # Test Setup
 # ------------------------------------------------------------------------------
@@ -56,8 +57,9 @@ def upload_file():
     elif request.method == 'GET':
         pass
     #    return render_template('index.html', form=form)
-    
-    return render_template("new_entry.html")
+
+    today_date = datetime.today().strftime('%Y-%m-%d')
+    return render_template("new_entry.html", today_date=today_date)
 
 @app.route("/new_entry_complete")
 def new_entry_complete():
