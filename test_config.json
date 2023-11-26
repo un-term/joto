@@ -1,5 +1,5 @@
 {
-    "data_dir": "test_data_dir/",
+    "data_dir": "test_workspace/",
     "sqlite_db_path": "test.db",
     "upload_image_dirpath": "images/upload/",
     "original_image_dirpath": "images/original/",
