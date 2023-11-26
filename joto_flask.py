@@ -1,12 +1,10 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, abort, redirect, url_for
 from werkzeug.utils import secure_filename
 import os,sys,inspect
 import joto
 
 # Test Setup
 # ------------------------------------------------------------------------------
-if not os.path.exists("test_workspace"):
-    os.makedirs("test_workspace")        
 # load config and setup objects
 if os.path.isfile("test_config.json"):
     json_config = joto.JsonConfig("test_config.json")
@@ -41,14 +39,31 @@ def upload_file():
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             # return redirect(url_for('download_file', name=filename))        print("date from form: ", date)
             # return redirect(url_for('download_file', name=filename))
+        else:
+            filename = ""
 
-        joto_obj.add_new_entry(date, comment, filename)
+        new_entry_status = False
+        if joto_obj.add_new_entry(date, comment, filename):
+            new_entry_status = True
         joto_obj.create_content()
         joto_obj.write_content()
+        
+        if new_entry_status:
+            return redirect(url_for('new_entry_complete'))
+        else:
+            return redirect(url_for('new_entry_failure'))
 
     elif request.method == 'GET':
         pass
     #    return render_template('index.html', form=form)
     
     return render_template("new_entry.html")
+
+@app.route("/new_entry_complete")
+def new_entry_complete():
+    return render_template("new_entry_complete.html")
+
+@app.route("/new_entry_failure")
+def new_entry_failure():
+    return render_template("new_entry_failure.html")
 
