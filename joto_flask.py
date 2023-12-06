@@ -26,7 +26,7 @@ joto_obj.check_req()
 # ------------------------------------------------------------------------------
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = joto_obj.images_manage.get_upld_dir()
-@app.route("/", methods=['GET', 'POST'])
+@app.route("/new_entry", methods=['GET', 'POST'])
 def upload_file():
 # def index():
     if request.method == 'POST':
@@ -69,3 +69,6 @@ def new_entry_complete():
 def new_entry_failure():
     return render_template("new_entry_failure.html")
 
+@app.route('/')
+def static_file():
+    return app.send_static_file('path_html')
