@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, abort, redirect, url_for
+from flask import Flask, render_template, request, abort, redirect, url_for, send_file
 from werkzeug.utils import secure_filename
 import os,sys,inspect
 import joto
@@ -24,7 +24,7 @@ joto_obj.check_req()
 
 # Flask
 # ------------------------------------------------------------------------------
-app = Flask(__name__)
+app = Flask(__name__, static_folder='test_workspace')
 app.config['UPLOAD_FOLDER'] = joto_obj.images_manage.get_upld_dir()
 @app.route("/", methods=['GET', 'POST'])
 def upload_file():
@@ -46,11 +46,12 @@ def upload_file():
         new_entry_status = False
         if joto_obj.add_new_entry(date, comment, filename):
             new_entry_status = True
-        joto_obj.create_content()
-        joto_obj.write_content()
+
+        
         
         if new_entry_status:
-            return redirect(url_for('new_entry_complete'))
+            render_template("journal.html", date=date, comment=comment)
+            return redirect(url_for('journal'))
         else:
             return redirect(url_for('new_entry_failure'))
 
@@ -68,4 +69,9 @@ def new_entry_complete():
 @app.route("/new_entry_failure")
 def new_entry_failure():
     return render_template("new_entry_failure.html")
+
+@app.route("/journal")
+def journal():
+    # return send_file("test_workspace/joto.html")
+    return render_template("journal.html")
 

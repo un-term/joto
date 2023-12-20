@@ -1,0 +1,25 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>joto - photo journal</title>
+</head>
+<body>
+
+<style>
+img {
+    max-width:450px;
+    max-height:450px;
+}
+</style>
+
+{%for i in range(0, nb_of_entries)%}
+
+<h1>{{date}}</h1>
+<img src="{{url_for('static', filename='FullMoon2010.jpg')}}" />
+<p>{{comment}}</p>
+
+{%endfor%} 
+
+</body>
+</html>
